@@ -1,0 +1,24 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mit IPFire verbinden",
+        "description": "IPFire-Adresse und Zugangsdaten eingeben. /cgi-bin/speed.cgi wird automatisch verwendet.",
+        "data": {
+          "url": "IPFire-URL",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "verify_ssl": "SSL-Zertifikat prüfen"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Benutzername oder Passwort ist ungültig.",
+      "cannot_connect": "IPFire konnte nicht erreicht werden.",
+      "unknown": "Unbekannter Fehler."
+    },
+    "abort": {
+      "already_configured": "Diese IPFire-Instanz ist bereits konfiguriert."
+    }
+  }
+}
