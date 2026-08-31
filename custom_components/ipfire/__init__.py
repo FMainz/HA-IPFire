@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import timedelta
-
-import aiohttp
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
     CONF_PASSWORD,
@@ -14,7 +14,6 @@ from .const import (
     CONF_URL,
     CONF_USERNAME,
     CONF_VERIFY_SSL,
-    DATA_COORDINATOR,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
 )
@@ -26,17 +25,30 @@ PLATFORMS: list[str] = ["sensor"]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
+@dataclass(slots=True)
+class IPFireRuntimeData:
+    """Runtime data for HA-IPFire."""
+
+    coordinator: IPFireCoordinator
+
+
+type IPFireConfigEntry = ConfigEntry[IPFireRuntimeData]
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: IPFireConfigEntry,
 ) -> bool:
-    """Set up IPFire from a config entry."""
+    """Set up HA-IPFire from a config entry."""
 
-    session = aiohttp.ClientSession()
+    session = async_get_clientsession(hass)
 
     scan_interval = entry.options.get(
         CONF_SCAN_INTERVAL,
-        DEFAULT_SCAN_INTERVAL,
+        entry.data.get(
+            CONF_SCAN_INTERVAL,
+            DEFAULT_SCAN_INTERVAL,
+        ),
     )
 
     coordinator = IPFireCoordinator(
@@ -51,17 +63,11 @@ async def async_setup_entry(
         ),
     )
 
-    try:
-        await coordinator.async_config_entry_first_refresh()
-    except Exception:
-        await session.close()
-        raise
+    await coordinator.async_config_entry_first_refresh()
 
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = {
-        DATA_COORDINATOR: coordinator,
-        "session": session,
-    }
+    entry.runtime_data = IPFireRuntimeData(
+        coordinator=coordinator
+    )
 
     await hass.config_entries.async_forward_entry_setups(
         entry,
@@ -73,37 +79,43 @@ async def async_setup_entry(
 
 async def async_unload_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: IPFireConfigEntry,
 ) -> bool:
-    """Unload an IPFire config entry."""
+    """Unload HA-IPFire."""
 
-    unload_ok = await hass.config_entries.async_unload_platforms(
+    return await hass.config_entries.async_unload_platforms(
         entry,
         PLATFORMS,
     )
 
-    data = hass.data[DOMAIN].pop(entry.entry_id)
 
-    await data["session"].close()
-
-    return unload_ok
-
-
-async def async_update_options(
+async def async_migrate_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
-) -> None:
-    """Update the coordinator when options change."""
+) -> bool:
+    """Migrate an older HA-IPFire config entry."""
 
-    coordinator: IPFireCoordinator = (
-        hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
-    )
+    if entry.version == 1:
+        data = dict(entry.data)
+        options = dict(entry.options)
 
-    scan_interval = entry.options.get(
-        CONF_SCAN_INTERVAL,
-        DEFAULT_SCAN_INTERVAL,
-    )
+        if CONF_SCAN_INTERVAL in data:
+            options.setdefault(
+                CONF_SCAN_INTERVAL,
+                data.pop(CONF_SCAN_INTERVAL),
+            )
 
-    coordinator.update_interval = timedelta(
-        seconds=scan_interval
-    )
+        options.setdefault(
+            CONF_SCAN_INTERVAL,
+            DEFAULT_SCAN_INTERVAL,
+        )
+
+        hass.config_entries.async_update_entry(
+            entry,
+            version=2,
+            data=data,
+            options=options,
+            unique_id=None,
+        )
+
+    return True
