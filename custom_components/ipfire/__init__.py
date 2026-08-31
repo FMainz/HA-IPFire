@@ -45,10 +45,7 @@ async def async_setup_entry(
 
     scan_interval = entry.options.get(
         CONF_SCAN_INTERVAL,
-        entry.data.get(
-            CONF_SCAN_INTERVAL,
-            DEFAULT_SCAN_INTERVAL,
-        ),
+        DEFAULT_SCAN_INTERVAL,
     )
 
     coordinator = IPFireCoordinator(
@@ -59,14 +56,14 @@ async def async_setup_entry(
         password=entry.data[CONF_PASSWORD],
         verify_ssl=entry.data[CONF_VERIFY_SSL],
         update_interval=timedelta(
-            seconds=scan_interval
+            seconds=scan_interval,
         ),
     )
 
     await coordinator.async_config_entry_first_refresh()
 
     entry.runtime_data = IPFireRuntimeData(
-        coordinator=coordinator
+        coordinator=coordinator,
     )
 
     await hass.config_entries.async_forward_entry_setups(
@@ -87,35 +84,3 @@ async def async_unload_entry(
         entry,
         PLATFORMS,
     )
-
-
-async def async_migrate_entry(
-    hass: HomeAssistant,
-    entry: ConfigEntry,
-) -> bool:
-    """Migrate an older HA-IPFire config entry."""
-
-    if entry.version == 1:
-        data = dict(entry.data)
-        options = dict(entry.options)
-
-        if CONF_SCAN_INTERVAL in data:
-            options.setdefault(
-                CONF_SCAN_INTERVAL,
-                data.pop(CONF_SCAN_INTERVAL),
-            )
-
-        options.setdefault(
-            CONF_SCAN_INTERVAL,
-            DEFAULT_SCAN_INTERVAL,
-        )
-
-        hass.config_entries.async_update_entry(
-            entry,
-            version=2,
-            data=data,
-            options=options,
-            unique_id=None,
-        )
-
-    return True
