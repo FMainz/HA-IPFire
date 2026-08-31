@@ -5,6 +5,7 @@
   "config_flow": true,
   "documentation": "https://github.com/FMainz/HA-IPFire",
   "domain": "ipfire",
+  "integration_type": "device",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/FMainz/HA-IPFire/issues",
   "name": "HA-IPFire",
