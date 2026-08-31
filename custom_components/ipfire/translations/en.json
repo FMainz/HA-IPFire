@@ -1,5 +1,6 @@
 {
   "config": {
+    "flow_title": "HA-IPFire",
     "step": {
       "user": {
         "title": "Connect to IPFire",
@@ -10,25 +11,54 @@
           "password": "Password",
           "verify_ssl": "Verify SSL certificate",
           "scan_interval": "Polling interval (seconds)"
+        },
+        "data_description": {
+          "url": "The hostname or IP address of the IPFire firewall. The port can be included in the URL.",
+          "verify_ssl": "Disable this for the self-signed certificates commonly used by IPFire.",
+          "scan_interval": "How often HA-IPFire retrieves traffic counters. Allowed values are 5 to 60 seconds."
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure IPFire",
+        "description": "Update the IPFire connection settings.",
+        "data": {
+          "url": "IPFire URL",
+          "username": "Username",
+          "password": "Password",
+          "verify_ssl": "Verify SSL certificate"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate IPFire",
+        "description": "The IPFire credentials are no longer valid. Enter the current credentials.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
         }
       }
     },
     "error": {
       "invalid_auth": "Invalid username or password.",
       "cannot_connect": "Unable to connect to IPFire.",
+      "invalid_response": "IPFire returned an invalid response.",
       "unknown": "Unexpected error."
     },
     "abort": {
-      "already_configured": "This IPFire instance is already configured."
+      "already_configured": "This IPFire instance is already configured.",
+      "reauth_successful": "Reauthentication was successful.",
+      "reconfigure_successful": "Reconfiguration was successful."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Configure HA-IPFire",
-        "description": "The polling interval determines how often data is retrieved from IPFire.",
+        "title": "HA-IPFire options",
+        "description": "Configure how often HA-IPFire polls the firewall.",
         "data": {
           "scan_interval": "Polling interval (seconds)"
+        },
+        "data_description": {
+          "scan_interval": "Allowed values are 5 to 60 seconds. The default is 30 seconds."
         }
       }
     }
