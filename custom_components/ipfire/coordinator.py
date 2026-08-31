@@ -44,7 +44,7 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         verify_ssl: bool,
         update_interval: timedelta,
     ) -> None:
-        """Initialize the IPFire coordinator."""
+        """Initialize the coordinator."""
 
         super().__init__(
             hass,
@@ -77,6 +77,7 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
                     self.password,
                 ),
                 ssl=self.verify_ssl,
+                timeout=aiohttp.ClientTimeout(total=10),
             ) as response:
                 if response.status in (401, 403):
                     raise ConfigEntryAuthFailed(
@@ -84,7 +85,6 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
                     )
 
                 response.raise_for_status()
-
                 content = await response.text()
 
         except ConfigEntryAuthFailed:
@@ -155,6 +155,4 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         if value is None:
             raise ValueError("Missing counter value")
 
-        numeric_value = value.strip().split()[0]
-
-        return int(numeric_value)
+        return int(value.strip().split()[0])
