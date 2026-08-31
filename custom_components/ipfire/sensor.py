@@ -15,7 +15,6 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DATA_COORDINATOR, DOMAIN
 from .coordinator import IPFireCoordinator
 
 
@@ -34,7 +33,6 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         key="download",
         translation_key="download",
         value_key="rxb",
-        icon="mdi:download-network",
         device_class=SensorDeviceClass.DATA_SIZE,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfInformation.BYTES,
@@ -44,7 +42,6 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         key="upload",
         translation_key="upload",
         value_key="txb",
-        icon="mdi:upload-network",
         device_class=SensorDeviceClass.DATA_SIZE,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfInformation.BYTES,
@@ -54,10 +51,11 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         key="download_rate",
         translation_key="download_rate",
         value_key="rx_rate",
-        icon="mdi:download-network",
         device_class=SensorDeviceClass.DATA_RATE,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfDataRate.BYTES_PER_SECOND,
+        native_unit_of_measurement=(
+            UnitOfDataRate.BYTES_PER_SECOND
+        ),
         suggested_unit_of_measurement=(
             UnitOfDataRate.KILOBYTES_PER_SECOND
         ),
@@ -67,10 +65,11 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         key="upload_rate",
         translation_key="upload_rate",
         value_key="tx_rate",
-        icon="mdi:upload-network",
         device_class=SensorDeviceClass.DATA_RATE,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfDataRate.BYTES_PER_SECOND,
+        native_unit_of_measurement=(
+            UnitOfDataRate.BYTES_PER_SECOND
+        ),
         suggested_unit_of_measurement=(
             UnitOfDataRate.KILOBYTES_PER_SECOND
         ),
@@ -87,7 +86,7 @@ async def async_setup_entry(
     """Set up IPFire sensors."""
 
     coordinator: IPFireCoordinator = (
-        hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
+        entry.runtime_data.coordinator
     )
 
     async_add_entities(
@@ -125,7 +124,7 @@ class IPFireTrafficSensor(
         )
 
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
+            identifiers={("ipfire", entry.entry_id)},
             name="IPFire",
             manufacturer="IPFire",
             model="Firewall",
