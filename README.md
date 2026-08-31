@@ -1,212 +1,79 @@
 # HA-IPFire
 
-Home Assistant integration for IPFire.
-
-HA-IPFire reads cumulative network traffic counters from an
-IPFire firewall using `/cgi-bin/speed.cgi`.
+Home Assistant integration for monitoring traffic statistics from an IPFire firewall.
 
 ## Features
 
 - Download traffic counter
 - Upload traffic counter
-- Current download rate
-- Current upload rate
-- Home Assistant long-term statistics
-- Configurable IPFire URL
-- Username/password authentication
+- Current download speed
+- Current upload speed
+- Configurable polling interval
+- Polling interval from 5 to 60 seconds
 - Optional SSL certificate verification
-- Support for self-signed IPFire certificates
-- Local polling
-- One IPFire device containing all traffic sensors
+- Username/password authentication
 - HACS compatible
+- German and English translations
 
-## Sensors
+## IPFire
 
-The integration provides four sensors.
-
-### Download
-
-Cumulative received traffic.
-
-Source:
-
-`rxb`
-
-Unit:
-
-`B`
-
-State class:
-
-`total_increasing`
-
-### Upload
-
-Cumulative transmitted traffic.
-
-Source:
-
-`txb`
-
-Unit:
-
-`B`
-
-State class:
-
-`total_increasing`
-
-### Download Rate
-
-Current calculated download rate.
-
-The rate is calculated from two consecutive `rxb`
-measurements.
-
-Unit:
-
-`kB/s`
-
-### Upload Rate
-
-Current calculated upload rate.
-
-The rate is calculated from two consecutive `txb`
-measurements.
-
-Unit:
-
-`kB/s`
-
-## IPFire API
-
-HA-IPFire accesses:
+The integration retrieves traffic information from:
 
 `/cgi-bin/speed.cgi`
 
-The default IPFire URL is:
+Default URL:
 
 `https://ipfire.local:444`
 
-The actual request is therefore:
+The hostname or IP address can be changed during configuration.
 
-`https://ipfire.local:444/cgi-bin/speed.cgi`
+## Sensors
 
-The hostname or IP address can be changed during setup.
+The integration provides four sensors:
 
-The expected response is:
+- Download
+- Upload
+- Download Speed
+- Upload Speed
 
-```xml
-<inetinfo>
-    <rx_kbs>0 kb/s</rx_kbs>
-    <tx_kbs>0 kb/s</tx_kbs>
-    <rxb>7307842082</rxb>
-    <txb>5579282702</txb>
-</inetinfo>
+The cumulative traffic counters are provided in bytes.
 
-The rx_kbs and tx_kbs values are intentionally ignored.
+The current transfer rates are calculated from the difference between two counter readings and are internally provided in bytes per second.
 
-On some IPFire installations these values are always reported
-as 0 kb/s.
+Home Assistant handles unit conversion and display formatting.
 
-The actual transfer rate is calculated from the cumulative
-rxb and txb counters.
+## Polling interval
 
-Installation
-HACS
+The polling interval can be configured between:
 
-HA-IPFire can be installed through HACS as a custom repository
-until it becomes part of the default HACS repository list.
+- Minimum: 5 seconds
+- Default: 30 seconds
+- Maximum: 60 seconds
 
-Open HACS.
-Select Integrations.
-Open the menu in the upper-right corner.
-Select Custom repositories.
+## SSL certificates
 
-Add:
+SSL certificate verification can be enabled or disabled during configuration.
 
-https://github.com/FMainz/HA-IPFire
+Because IPFire installations commonly use self-signed certificates, certificate verification is disabled by default.
 
-Select Integration.
-Add the repository.
-Install HA-IPFire.
-Restart Home Assistant.
+## Installation
 
-After restarting Home Assistant:
+### HACS
 
-Settings → Devices & services → Add Integration
+Search for `HA-IPFire` in HACS.
 
-Search for:
+Alternatively, add this repository as a custom repository in HACS.
 
-HA-IPFire
+### Manual installation
 
-Manual installation
+Copy the `custom_components/ipfire` directory into:
 
-Copy the custom_components/ipfire directory into:
+`config/custom_components/ipfire`
 
-config/custom_components/
+Restart Home Assistant and add IPFire through:
 
-Restart Home Assistant and add the integration through:
+Settings → Devices & services → Add integration
 
-Settings → Devices & services → Add Integration
+## License
 
-Configuration
-
-The default URL is:
-
-https://ipfire.local:444
-
-The integration automatically adds:
-
-/cgi-bin/speed.cgi
-
-The following values are required:
-
-IPFire URL
-Username
-Password
-SSL verification
-
-SSL certificate verification can be enabled or disabled.
-
-It is disabled by default because IPFire installations commonly
-use self-signed certificates.
-
-If IPFire uses a certificate signed by a trusted certificate
-authority, SSL verification can be enabled.
-
-Polling
-
-The integration polls IPFire every 30 seconds.
-
-The transfer rate is calculated from the difference between
-two consecutive measurements.
-
-The first measurement has no previous value, so the rate is
-initially 0 kB/s.
-
-Device
-
-All sensors are grouped into one device:
-
-IPFire
-
-Sensors:
-
-Download
-Upload
-Download Rate
-Upload Rate
-Development
-
-Repository:
-
-https://github.com/FMainz/HA-IPFire
-
-Issues:
-
-https://github.com/FMainz/HA-IPFire/issues
-
-License
-
-MIT License
+MIT
