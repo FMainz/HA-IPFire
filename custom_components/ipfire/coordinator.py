@@ -8,7 +8,6 @@ from datetime import timedelta
 
 import aiohttp
 
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
@@ -32,9 +31,7 @@ class IPFireData:
     tx_rate: float
 
 
-class IPFireCoordinator(
-    DataUpdateCoordinator[IPFireData]
-):
+class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
     """Coordinate data updates from IPFire."""
 
     def __init__(
@@ -134,7 +131,6 @@ class IPFireCoordinator(
                 rx_difference = rx_bytes - self._previous_rx_bytes
                 tx_difference = tx_bytes - self._previous_tx_bytes
 
-                # Handle a possible counter reset or rollover.
                 if rx_difference >= 0:
                     rx_rate = rx_difference / elapsed
 
@@ -159,15 +155,6 @@ class IPFireCoordinator(
         if value is None:
             raise ValueError("Missing counter value")
 
-        # IPFire currently returns values such as:
-        #
-        #   7307842082
-        #
-        # or potentially:
-        #
-        #   7307842082 B
-        #
-        # Only the numeric portion is relevant.
         numeric_value = value.strip().split()[0]
 
         return int(numeric_value)
