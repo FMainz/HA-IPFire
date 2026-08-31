@@ -30,10 +30,10 @@ class IPFireSensorDescription(SensorEntityDescription):
     value_key: str
 
 
-SENSORS = (
+SENSORS: tuple[IPFireSensorDescription, ...] = (
     IPFireSensorDescription(
-        key="rxb",
-        name="Download",
+        key="download",
+        translation_key="download",
         value_key="rxb",
         icon="mdi:download-network",
         device_class=SensorDeviceClass.DATA_SIZE,
@@ -41,8 +41,8 @@ SENSORS = (
         native_unit_of_measurement=UnitOfInformation.BYTES,
     ),
     IPFireSensorDescription(
-        key="txb",
-        name="Upload",
+        key="upload",
+        translation_key="upload",
         value_key="txb",
         icon="mdi:upload-network",
         device_class=SensorDeviceClass.DATA_SIZE,
@@ -50,25 +50,29 @@ SENSORS = (
         native_unit_of_measurement=UnitOfInformation.BYTES,
     ),
     IPFireSensorDescription(
-        key="rx_rate",
-        name="Download Geschwindigkeit",
+        key="download_rate",
+        translation_key="download_rate",
         value_key="rx_rate",
         icon="mdi:download-network",
         device_class=SensorDeviceClass.DATA_RATE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfDataRate.BYTES_PER_SECOND,
-        suggested_unit_of_measurement=UnitOfDataRate.KILOBYTES_PER_SECOND,
+        suggested_unit_of_measurement=(
+            UnitOfDataRate.KILOBYTES_PER_SECOND
+        ),
         suggested_display_precision=1,
     ),
     IPFireSensorDescription(
-        key="tx_rate",
-        name="Upload Geschwindigkeit",
+        key="upload_rate",
+        translation_key="upload_rate",
         value_key="tx_rate",
         icon="mdi:upload-network",
         device_class=SensorDeviceClass.DATA_RATE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfDataRate.BYTES_PER_SECOND,
-        suggested_unit_of_measurement=UnitOfDataRate.KILOBYTES_PER_SECOND,
+        suggested_unit_of_measurement=(
+            UnitOfDataRate.KILOBYTES_PER_SECOND
+        ),
         suggested_display_precision=1,
     ),
 )
@@ -82,7 +86,9 @@ async def async_setup_entry(
     """Set up IPFire sensors."""
 
     coordinator: IPFireCoordinator = (
-        hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
+        hass.data[DOMAIN][entry.entry_id][
+            DATA_COORDINATOR
+        ]
     )
 
     async_add_entities(
@@ -119,29 +125,6 @@ class IPFireTrafficSensor(
             f"{entry.entry_id}_{description.key}"
         )
 
-        self._attr_name = description.name
-        self._attr_icon = description.icon
-
-        self._attr_device_class = (
-            description.device_class
-        )
-
-        self._attr_state_class = (
-            description.state_class
-        )
-
-        self._attr_native_unit_of_measurement = (
-            description.native_unit_of_measurement
-        )
-
-        self._attr_suggested_unit_of_measurement = (
-            description.suggested_unit_of_measurement
-        )
-
-        self._attr_suggested_display_precision = (
-            description.suggested_display_precision
-        )
-
         self._attr_device_info = DeviceInfo(
             identifiers={
                 (DOMAIN, entry.entry_id)
@@ -155,9 +138,10 @@ class IPFireTrafficSensor(
     def native_value(self) -> int | float | None:
         """Return the current sensor value."""
 
-        if not self.coordinator.data:
+        if self.coordinator.data is None:
             return None
 
-        return self.coordinator.data.get(
-            self.entity_description.value_key
+        return getattr(
+            self.coordinator.data,
+            self.entity_description.value_key,
         )
