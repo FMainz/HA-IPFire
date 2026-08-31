@@ -1,0 +1,18 @@
+{
+  "entity": {
+    "sensor": {
+      "download": {
+        "default": "mdi:download-network"
+      },
+      "upload": {
+        "default": "mdi:upload-network"
+      },
+      "download_rate": {
+        "default": "mdi:download-network"
+      },
+      "upload_rate": {
+        "default": "mdi:upload-network"
+      }
+    }
+  }
+}
