@@ -12,15 +12,14 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfDataRate, UnitOfInformation
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity_platform import (
-    AddEntitiesCallback,
-)
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-)
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DATA_COORDINATOR, DOMAIN
 from .coordinator import IPFireCoordinator
+
+
+PARALLEL_UPDATES = 0
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -39,6 +38,7 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         device_class=SensorDeviceClass.DATA_SIZE,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfInformation.BYTES,
+        suggested_display_precision=1,
     ),
     IPFireSensorDescription(
         key="upload",
@@ -48,6 +48,7 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         device_class=SensorDeviceClass.DATA_SIZE,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfInformation.BYTES,
+        suggested_display_precision=1,
     ),
     IPFireSensorDescription(
         key="download_rate",
@@ -86,9 +87,7 @@ async def async_setup_entry(
     """Set up IPFire sensors."""
 
     coordinator: IPFireCoordinator = (
-        hass.data[DOMAIN][entry.entry_id][
-            DATA_COORDINATOR
-        ]
+        hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
     )
 
     async_add_entities(
@@ -126,9 +125,7 @@ class IPFireTrafficSensor(
         )
 
         self._attr_device_info = DeviceInfo(
-            identifiers={
-                (DOMAIN, entry.entry_id)
-            },
+            identifiers={(DOMAIN, entry.entry_id)},
             name="IPFire",
             manufacturer="IPFire",
             model="Firewall",
