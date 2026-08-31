@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Connect to IPFire",
-        "description": "Enter the IPFire URL and credentials. /cgi-bin/speed.cgi is used automatically.",
+        "description": "Enter the IPFire address and credentials.",
         "data": {
           "url": "IPFire URL",
           "username": "Username",
