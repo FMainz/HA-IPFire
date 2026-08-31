@@ -1,5 +1,6 @@
 {
   "config": {
+    "flow_title": "HA-IPFire",
     "step": {
       "user": {
         "title": "Mit IPFire verbinden",
@@ -10,25 +11,54 @@
           "password": "Passwort",
           "verify_ssl": "SSL-Zertifikat prüfen",
           "scan_interval": "Abfrageintervall (Sekunden)"
+        },
+        "data_description": {
+          "url": "Hostname oder IP-Adresse der IPFire-Firewall. Der Port kann in der URL angegeben werden.",
+          "verify_ssl": "Bei den häufig verwendeten selbstsignierten IPFire-Zertifikaten deaktivieren.",
+          "scan_interval": "Wie häufig HA-IPFire die Traffic-Zähler abruft. Zulässig sind 5 bis 60 Sekunden."
+        }
+      },
+      "reconfigure": {
+        "title": "IPFire neu konfigurieren",
+        "description": "IPFire-Verbindungseinstellungen ändern.",
+        "data": {
+          "url": "IPFire-URL",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "verify_ssl": "SSL-Zertifikat prüfen"
+        }
+      },
+      "reauth_confirm": {
+        "title": "IPFire erneut authentifizieren",
+        "description": "Die IPFire-Zugangsdaten sind nicht mehr gültig. Bitte die aktuellen Zugangsdaten eingeben.",
+        "data": {
+          "username": "Benutzername",
+          "password": "Passwort"
         }
       }
     },
     "error": {
       "invalid_auth": "Benutzername oder Passwort ist ungültig.",
       "cannot_connect": "IPFire konnte nicht erreicht werden.",
+      "invalid_response": "IPFire hat eine ungültige Antwort geliefert.",
       "unknown": "Unbekannter Fehler."
     },
     "abort": {
-      "already_configured": "Diese IPFire-Instanz ist bereits konfiguriert."
+      "already_configured": "Diese IPFire-Instanz ist bereits konfiguriert.",
+      "reauth_successful": "Die erneute Authentifizierung war erfolgreich.",
+      "reconfigure_successful": "Die Neukonfiguration war erfolgreich."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "HA-IPFire konfigurieren",
-        "description": "Das Abfrageintervall bestimmt, wie häufig die Daten von IPFire abgerufen werden.",
+        "title": "HA-IPFire Optionen",
+        "description": "Festlegen, wie häufig HA-IPFire die Firewall abfragt.",
         "data": {
           "scan_interval": "Abfrageintervall (Sekunden)"
+        },
+        "data_description": {
+          "scan_interval": "Zulässig sind 5 bis 60 Sekunden. Standard sind 30 Sekunden."
         }
       }
     }
