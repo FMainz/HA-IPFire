@@ -1,14 +1,14 @@
 {
   "domain": "ipfire",
   "name": "HA-IPFire",
-  "version": "0.2.0",
-  "documentation": "https://github.com/FMainz/HA-IPFire",
-  "issue_tracker": "https://github.com/FMainz/HA-IPFire/issues",
-  "requirements": [],
   "codeowners": [
     "@FMainz"
   ],
   "config_flow": true,
+  "documentation": "https://github.com/FMainz/HA-IPFire",
   "integration_type": "hub",
-  "iot_class": "local_polling"
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/FMainz/HA-IPFire/issues",
+  "requirements": [],
+  "version": "0.2.0"
 }
