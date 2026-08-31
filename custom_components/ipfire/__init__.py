@@ -6,6 +6,7 @@ import aiohttp
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
 
 from .const import (
     CONF_PASSWORD,
@@ -21,14 +22,7 @@ from .coordinator import IPFireCoordinator
 
 PLATFORMS: list[str] = ["sensor"]
 
-
-async def async_setup(
-    hass: HomeAssistant,
-    config: dict,
-) -> bool:
-    """Set up the IPFire integration."""
-    hass.data.setdefault(DOMAIN, {})
-    return True
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 async def async_setup_entry(
@@ -51,8 +45,13 @@ async def async_setup_entry(
         ),
     )
 
-    await coordinator.async_config_entry_first_refresh()
+    try:
+        await coordinator.async_config_entry_first_refresh()
+    except Exception:
+        await session.close()
+        raise
 
+    hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {
         DATA_COORDINATOR: coordinator,
         "session": session,
