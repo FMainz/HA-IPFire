@@ -10,6 +10,7 @@ from homeassistant.helpers import config_validation as cv
 
 from .const import (
     CONF_PASSWORD,
+    CONF_SCAN_INTERVAL,
     CONF_URL,
     CONF_USERNAME,
     CONF_VERIFY_SSL,
@@ -33,6 +34,11 @@ async def async_setup_entry(
 
     session = aiohttp.ClientSession()
 
+    scan_interval = entry.options.get(
+        CONF_SCAN_INTERVAL,
+        DEFAULT_SCAN_INTERVAL,
+    )
+
     coordinator = IPFireCoordinator(
         hass=hass,
         session=session,
@@ -41,7 +47,7 @@ async def async_setup_entry(
         password=entry.data[CONF_PASSWORD],
         verify_ssl=entry.data[CONF_VERIFY_SSL],
         update_interval=timedelta(
-            seconds=DEFAULT_SCAN_INTERVAL
+            seconds=scan_interval
         ),
     )
 
@@ -81,3 +87,23 @@ async def async_unload_entry(
     await data["session"].close()
 
     return unload_ok
+
+
+async def async_update_options(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+) -> None:
+    """Update the coordinator when options change."""
+
+    coordinator: IPFireCoordinator = (
+        hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
+    )
+
+    scan_interval = entry.options.get(
+        CONF_SCAN_INTERVAL,
+        DEFAULT_SCAN_INTERVAL,
+    )
+
+    coordinator.update_interval = timedelta(
+        seconds=scan_interval
+    )

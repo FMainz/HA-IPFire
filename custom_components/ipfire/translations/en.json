@@ -8,7 +8,8 @@
           "url": "IPFire URL",
           "username": "Username",
           "password": "Password",
-          "verify_ssl": "Verify SSL certificate"
+          "verify_ssl": "Verify SSL certificate",
+          "scan_interval": "Polling interval (seconds)"
         }
       }
     },
@@ -19,6 +20,17 @@
     },
     "abort": {
       "already_configured": "This IPFire instance is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configure HA-IPFire",
+        "description": "The polling interval determines how often data is retrieved from IPFire.",
+        "data": {
+          "scan_interval": "Polling interval (seconds)"
+        }
+      }
     }
   }
 }

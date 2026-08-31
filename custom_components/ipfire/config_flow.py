@@ -9,11 +9,15 @@ from homeassistant.exceptions import HomeAssistantError
 
 from .const import (
     CONF_PASSWORD,
+    CONF_SCAN_INTERVAL,
     CONF_URL,
     CONF_USERNAME,
     CONF_VERIFY_SSL,
+    DEFAULT_SCAN_INTERVAL,
     DEFAULT_URL,
     DOMAIN,
+    MAX_SCAN_INTERVAL,
+    MIN_SCAN_INTERVAL,
     SPEED_PATH,
 )
 
@@ -29,9 +33,7 @@ async def validate_input(
         + SPEED_PATH
     )
 
-    timeout = aiohttp.ClientTimeout(
-        total=10
-    )
+    timeout = aiohttp.ClientTimeout(total=10)
 
     connector = aiohttp.TCPConnector(
         ssl=data[CONF_VERIFY_SSL]
@@ -41,7 +43,6 @@ async def validate_input(
         connector=connector,
         timeout=timeout,
     ) as session:
-
         try:
             async with session.get(
                 url,
@@ -50,15 +51,10 @@ async def validate_input(
                     data[CONF_PASSWORD],
                 ),
             ) as response:
-
-                if response.status in (
-                    401,
-                    403,
-                ):
+                if response.status in (401, 403):
                     raise InvalidAuth
 
                 response.raise_for_status()
-
                 await response.read()
 
         except InvalidAuth:
@@ -69,6 +65,27 @@ async def validate_input(
             TimeoutError,
         ) as err:
             raise CannotConnect from err
+
+
+def scan_interval_schema(
+    default: int,
+) -> vol.Schema:
+    """Return the schema for the scan interval."""
+
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_SCAN_INTERVAL,
+                default=default,
+            ): vol.All(
+                vol.Coerce(int),
+                vol.Range(
+                    min=MIN_SCAN_INTERVAL,
+                    max=MAX_SCAN_INTERVAL,
+                ),
+            )
+        }
+    )
 
 
 class ConfigFlow(
@@ -88,7 +105,6 @@ class ConfigFlow(
         errors: dict[str, str] = {}
 
         if user_input is not None:
-
             try:
                 await validate_input(
                     self.hass,
@@ -114,9 +130,14 @@ class ConfigFlow(
                 self._abort_if_unique_id_configured()
 
                 return self.async_create_entry(
-                    title=user_input[CONF_URL]
-                    .rstrip("/"),
+                    title=user_input[CONF_URL].rstrip("/"),
                     data=user_input,
+                    options={
+                        CONF_SCAN_INTERVAL: user_input.get(
+                            CONF_SCAN_INTERVAL,
+                            DEFAULT_SCAN_INTERVAL,
+                        )
+                    },
                 )
 
         schema = vol.Schema(
@@ -138,6 +159,17 @@ class ConfigFlow(
                     CONF_VERIFY_SSL,
                     default=False,
                 ): bool,
+
+                vol.Required(
+                    CONF_SCAN_INTERVAL,
+                    default=DEFAULT_SCAN_INTERVAL,
+                ): vol.All(
+                    vol.Coerce(int),
+                    vol.Range(
+                        min=MIN_SCAN_INTERVAL,
+                        max=MAX_SCAN_INTERVAL,
+                    ),
+                ),
             }
         )
 
@@ -145,6 +177,44 @@ class ConfigFlow(
             step_id="user",
             data_schema=schema,
             errors=errors,
+        )
+
+    @staticmethod
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        """Return the options flow."""
+
+        return OptionsFlowHandler()
+
+
+class OptionsFlowHandler(
+    config_entries.OptionsFlow,
+):
+    """Handle IPFire options."""
+
+    async def async_step_init(
+        self,
+        user_input: dict | None = None,
+    ) -> config_entries.FlowResult:
+        """Manage IPFire options."""
+
+        if user_input is not None:
+            return self.async_create_entry(
+                title="",
+                data=user_input,
+            )
+
+        current_interval = self.config_entry.options.get(
+            CONF_SCAN_INTERVAL,
+            DEFAULT_SCAN_INTERVAL,
+        )
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=scan_interval_schema(
+                current_interval
+            ),
         )
 
 

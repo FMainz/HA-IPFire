@@ -8,7 +8,8 @@
           "url": "IPFire-URL",
           "username": "Benutzername",
           "password": "Passwort",
-          "verify_ssl": "SSL-Zertifikat prüfen"
+          "verify_ssl": "SSL-Zertifikat prüfen",
+          "scan_interval": "Abfrageintervall (Sekunden)"
         }
       }
     },
@@ -19,6 +20,17 @@
     },
     "abort": {
       "already_configured": "Diese IPFire-Instanz ist bereits konfiguriert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HA-IPFire konfigurieren",
+        "description": "Das Abfrageintervall bestimmt, wie häufig die Daten von IPFire abgerufen werden.",
+        "data": {
+          "scan_interval": "Abfrageintervall (Sekunden)"
+        }
+      }
     }
   }
 }
