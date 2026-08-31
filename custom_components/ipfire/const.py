@@ -2,8 +2,6 @@ from __future__ import annotations
 
 DOMAIN = "ipfire"
 
-DATA_COORDINATOR = "coordinator"
-
 CONF_URL = "url"
 CONF_USERNAME = "username"
 CONF_PASSWORD = "password"
