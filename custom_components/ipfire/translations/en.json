@@ -76,6 +76,20 @@
       },
       "upload_rate": {
         "name": "Upload Speed"
+      },
+      "connection_duration": {
+        "name": "Connection Duration"
+      },
+      "connection_state": {
+        "name": "Connection State"
+      }
+    },
+    "button": {
+      "connect": {
+        "name": "Connect"
+      },
+      "disconnect": {
+        "name": "Disconnect"
       }
     }
   }

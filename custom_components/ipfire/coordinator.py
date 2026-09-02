@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import time
-import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import timedelta
 
@@ -15,11 +14,8 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 
-from .const import DOMAIN, SPEED_PATH
-
-
+from .const import DOMAIN, HA_IPFIRE_PATH
 _LOGGER = logging.getLogger(__name__)
-
 
 @dataclass(frozen=True, slots=True)
 class IPFireData:
@@ -29,10 +25,15 @@ class IPFireData:
     txb: int
     rx_rate: float
     tx_rate: float
+    connection_state: str
+    connected_since: int | None
+    connection_duration: int
+    connection_duration_text: str
+    profile: str
 
 
 class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
-    """Coordinate data updates from IPFire."""
+    """Coordinate data updates and actions for IPFire."""
 
     def __init__(
         self,
@@ -45,7 +46,6 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         update_interval: timedelta,
     ) -> None:
         """Initialize the coordinator."""
-
         super().__init__(
             hass,
             _LOGGER,
@@ -64,18 +64,21 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         self._previous_tx_bytes: int | None = None
         self._previous_timestamp: float | None = None
 
+    @property
+    def api_url(self) -> str:
+        """Return the HA-IPFire API URL."""
+        return f"{self.base_url}{HA_IPFIRE_PATH}"
+
+    def _auth(self) -> aiohttp.BasicAuth:
+        """Return HTTP basic authentication."""
+        return aiohttp.BasicAuth(self.username, self.password)
+
     async def _async_update_data(self) -> IPFireData:
-        """Fetch and calculate traffic data from IPFire."""
-
-        url = f"{self.base_url}{SPEED_PATH}"
-
+        """Fetch and calculate data from IPFire."""
         try:
             async with self.session.get(
-                url,
-                auth=aiohttp.BasicAuth(
-                    self.username,
-                    self.password,
-                ),
+                self.api_url,
+                auth=self._auth(),
                 ssl=self.verify_ssl,
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as response:
@@ -85,38 +88,39 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
                     )
 
                 response.raise_for_status()
-                content = await response.text()
+                payload = await response.json(content_type=None)
 
         except ConfigEntryAuthFailed:
             raise
 
-        except aiohttp.ClientError as err:
+        except (aiohttp.ClientError, ValueError) as err:
             raise UpdateFailed(
-                f"Unable to connect to IPFire: {err}"
-            ) from err
-
-        except TimeoutError as err:
-            raise UpdateFailed(
-                "Timeout while connecting to IPFire"
+                f"Unable to read data from IPFire: {err}"
             ) from err
 
         try:
-            root = ET.fromstring(content)
+            connection = payload["connection"]
+            traffic = payload["traffic"]
 
-            rx_bytes = self._parse_counter(
-                root.findtext("rxb")
-            )
-            tx_bytes = self._parse_counter(
-                root.findtext("txb")
-            )
+            rx_bytes = self._parse_counter(traffic.get("rx_bytes"))
+            tx_bytes = self._parse_counter(traffic.get("tx_bytes"))
 
-        except (ET.ParseError, ValueError) as err:
+            connection_state = str(connection["state"])
+            connected_since = self._parse_optional_int(
+                connection.get("connected_since")
+            )
+            connection_duration = int(connection.get("duration", 0))
+            connection_duration_text = str(
+                connection.get("duration_text", "")
+            )
+            profile = str(connection.get("profile", ""))
+
+        except (KeyError, TypeError, ValueError) as err:
             raise UpdateFailed(
-                "Invalid XML response from IPFire"
+                "Invalid JSON response from IPFire"
             ) from err
 
         now = time.monotonic()
-
         rx_rate = 0.0
         tx_rate = 0.0
 
@@ -146,13 +150,82 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
             txb=tx_bytes,
             rx_rate=rx_rate,
             tx_rate=tx_rate,
+            connection_state=connection_state,
+            connected_since=connected_since,
+            connection_duration=connection_duration,
+            connection_duration_text=connection_duration_text,
+            profile=profile,
         )
 
-    @staticmethod
-    def _parse_counter(value: str | None) -> int:
-        """Parse a byte counter returned by IPFire."""
+    async def async_connect(self) -> None:
+        """Connect the IPFire Internet connection."""
+        await self._async_connection_action("connect")
 
+    async def async_disconnect(self) -> None:
+        """Disconnect the IPFire Internet connection."""
+        await self._async_connection_action("disconnect")
+
+    async def _async_connection_action(self, action: str) -> None:
+        """Execute a connection action on IPFire."""
+        if action not in {"connect", "disconnect"}:
+            raise ValueError(f"Unsupported IPFire action: {action}")
+
+        try:
+            async with self.session.post(
+                self.api_url,
+                auth=self._auth(),
+                ssl=self.verify_ssl,
+                headers={"X-HA-IPFire-API": "1"},
+                data={"action": action},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as response:
+                if response.status in (401, 403):
+                    raise ConfigEntryAuthFailed(
+                        "Invalid IPFire username or password"
+                    )
+
+                if response.status >= 400:
+                    try:
+                        payload = await response.json(content_type=None)
+                    except (ValueError, TypeError):
+                        payload = {}
+
+                    error = payload.get("error", "unknown_error")
+                    raise UpdateFailed(
+                        f"IPFire action '{action}' failed: {error}"
+                    )
+
+                payload = await response.json(content_type=None)
+
+                if payload.get("result") != "ok":
+                    raise UpdateFailed(
+                        f"IPFire action '{action}' failed: "
+                        f"{payload.get('result', 'unknown_error')}"
+                    )
+
+        except ConfigEntryAuthFailed:
+            raise
+
+        except (aiohttp.ClientError, ValueError) as err:
+            raise UpdateFailed(
+                f"Unable to execute IPFire action '{action}': {err}"
+            ) from err
+
+        # Refresh immediately so HA sees the new connection state.
+        await self.async_request_refresh()
+
+    @staticmethod
+    def _parse_counter(value: object) -> int:
+        """Parse a byte counter returned by IPFire."""
         if value is None:
             raise ValueError("Missing counter value")
 
-        return int(value.strip().split()[0])
+        return int(str(value))
+
+    @staticmethod
+    def _parse_optional_int(value: object) -> int | None:
+        """Parse an optional integer returned by IPFire."""
+        if value is None:
+            return None
+
+        return int(str(value))

@@ -4,7 +4,6 @@ from typing import Any
 
 import aiohttp
 import voluptuous as vol
-import xml.etree.ElementTree as ET
 
 from homeassistant import config_entries
 from homeassistant.config_entries import (
@@ -28,7 +27,7 @@ from .const import (
     DOMAIN,
     MAX_SCAN_INTERVAL,
     MIN_SCAN_INTERVAL,
-    SPEED_PATH,
+    HA_IPFIRE_PATH,
 )
 
 
@@ -40,7 +39,7 @@ async def validate_input(
 
     url = (
         data[CONF_URL].rstrip("/")
-        + SPEED_PATH
+        + HA_IPFIRE_PATH
     )
 
     session = async_get_clientsession(hass)
@@ -60,7 +59,7 @@ async def validate_input(
 
             response.raise_for_status()
 
-            content = await response.text()
+            payload = await response.json(content_type=None)
 
     except InvalidAuth:
         raise
@@ -68,17 +67,29 @@ async def validate_input(
     except (aiohttp.ClientError, TimeoutError) as err:
         raise CannotConnect from err
 
-    try:
-        root = ET.fromstring(content)
-
-        if root.findtext("rxb") is None:
-            raise InvalidResponse
-
-        if root.findtext("txb") is None:
-            raise InvalidResponse
-
-    except ET.ParseError as err:
+    except (ValueError, TypeError) as err:
         raise InvalidResponse from err
+
+    if not isinstance(payload, dict):
+        raise InvalidResponse
+
+    if payload.get("api_version") != 1:
+        raise InvalidResponse
+
+    connection = payload.get("connection")
+    traffic = payload.get("traffic")
+
+    if not isinstance(connection, dict):
+        raise InvalidResponse
+
+    if not isinstance(traffic, dict):
+        raise InvalidResponse
+
+    if "rx_bytes" not in traffic:
+        raise InvalidResponse
+
+    if "tx_bytes" not in traffic:
+        raise InvalidResponse
 
 
 def scan_interval_schema(

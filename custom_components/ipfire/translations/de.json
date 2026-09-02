@@ -72,10 +72,24 @@
         "name": "Upload"
       },
       "download_rate": {
-        "name": "Download Geschwindigkeit"
+        "name": "Download-Geschwindigkeit"
       },
       "upload_rate": {
-        "name": "Upload Geschwindigkeit"
+        "name": "Upload-Geschwindigkeit"
+      },
+      "connection_duration": {
+        "name": "Verbindungsdauer"
+      },
+      "connection_state": {
+        "name": "Verbindungsstatus"
+      }
+    },
+    "button": {
+      "connect": {
+        "name": "Verbinden"
+      },
+      "disconnect": {
+        "name": "Trennen"
       }
     }
   }
