@@ -30,7 +30,7 @@ class IPFireSensorDescription(SensorEntityDescription):
 
 SENSORS: tuple[IPFireSensorDescription, ...] = (
     IPFireSensorDescription(
-        key="download",
+        key="rxb",
         translation_key="download",
         value_key="rxb",
         device_class=SensorDeviceClass.DATA_SIZE,
@@ -39,7 +39,7 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         suggested_display_precision=1,
     ),
     IPFireSensorDescription(
-        key="upload",
+        key="txb",
         translation_key="upload",
         value_key="txb",
         device_class=SensorDeviceClass.DATA_SIZE,
@@ -48,7 +48,7 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         suggested_display_precision=1,
     ),
     IPFireSensorDescription(
-        key="download_rate",
+        key="rx_rate",
         translation_key="download_rate",
         value_key="rx_rate",
         device_class=SensorDeviceClass.DATA_RATE,
@@ -58,7 +58,7 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         suggested_display_precision=1,
     ),
     IPFireSensorDescription(
-        key="upload_rate",
+        key="tx_rate",
         translation_key="upload_rate",
         value_key="tx_rate",
         device_class=SensorDeviceClass.DATA_RATE,
