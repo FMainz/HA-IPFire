@@ -18,6 +18,9 @@ HA-IPFire provides the following features:
 * Upload traffic counter
 * Current download speed
 * Current upload speed
+* Internet connection state
+* Internet connection duration
+* Connect and Disconnect controls
 * Configurable polling interval
 * Polling interval from 5 to 60 seconds
 * Optional SSL certificate verification
@@ -45,18 +48,61 @@ HA-IPFire uses the cumulative traffic counters provided by IPFire to calculate t
 
 ## Sensors
 
-The integration provides four sensors:
+The integration provides six sensors:
 
 * **Download**
 * **Upload**
 * **Download Speed**
 * **Upload Speed**
+* **Connection Duration**
+* **Connection State**
+
+**Connection Duration** reports the duration of the current internet connection in seconds.
+
+**Connection State** reports the current IPFire connection state, such as `connected`, `connecting`, or `disconnected`.
 
 The cumulative traffic counters are provided in bytes.
 
 The current transfer rates are calculated from the difference between two consecutive counter readings and are internally provided in bytes per second.
 
 Home Assistant handles unit conversion and display formatting.
+
+## Internet connection control
+
+HA-IPFire provides two buttons to control the IPFire internet connection:
+
+* **Connect** starts the IPFire internet connection.
+* **Disconnect** stops the IPFire internet connection.
+
+The buttons use the dedicated `ha-ipfire.cgi` endpoint on the IPFire firewall. The CGI uses IPFire's native connection control and authentication.
+
+### IPFire CGI installation
+
+The CGI script is included in this repository at:
+
+```text
+ipfire/ha-ipfire.cgi
+```
+
+The CGI must be installed manually on the IPFire firewall. HACS installs only the Home Assistant integration and cannot copy files to the separate IPFire system.
+
+Copy the CGI to:
+
+```text
+/srv/web/ipfire/cgi-bin/ha-ipfire.cgi
+```
+
+Then set the correct ownership and permissions:
+
+```bash
+chown root:root /srv/web/ipfire/cgi-bin/ha-ipfire.cgi
+chmod 755 /srv/web/ipfire/cgi-bin/ha-ipfire.cgi
+```
+
+The CGI uses the existing IPFire web interface authentication. No additional CGI credentials are required.
+
+**Security:** The CGI should only be accessible through the trusted IPFire web interface and must not be exposed to untrusted networks.
+
 
 ## Polling interval
 
@@ -192,6 +238,8 @@ The following sensors are associated with this device:
 * Upload
 * Download Speed
 * Upload Speed
+* Connection Duration
+* Connection State
 
 ## Home Assistant
 
@@ -229,6 +277,9 @@ HA-IPFire bietet folgende Funktionen:
 * Upload-Trafficzähler
 * Aktuelle Download-Geschwindigkeit
 * Aktuelle Upload-Geschwindigkeit
+* Status der Internetverbindung
+* Dauer der Internetverbindung
+* Connect- und Disconnect-Steuerung
 * Konfigurierbares Abfrageintervall
 * Abfrageintervall von 5 bis 60 Sekunden
 * Optionale SSL-Zertifikatsprüfung
@@ -256,18 +307,60 @@ HA-IPFire verwendet die von IPFire bereitgestellten kumulativen Trafficzähler, 
 
 ## Sensoren
 
-Die Integration stellt vier Sensoren bereit:
+Die Integration stellt sechs Sensoren bereit:
 
 * **Download**
 * **Upload**
 * **Download Speed**
 * **Upload Speed**
+* **Connection Duration**
+* **Connection State**
+
+**Connection Duration** gibt die Dauer der aktuellen Internetverbindung in Sekunden an.
+
+**Connection State** gibt den aktuellen Verbindungsstatus von IPFire an, beispielsweise `connected`, `connecting` oder `disconnected`.
 
 Die kumulativen Trafficzähler werden in Byte bereitgestellt.
 
 Die aktuellen Übertragungsraten werden aus der Differenz zwischen zwei aufeinanderfolgenden Messungen berechnet und intern in Byte pro Sekunde bereitgestellt.
 
 Die Umrechnung der Einheiten und die Darstellung übernimmt Home Assistant.
+
+## Steuerung der Internetverbindung
+
+HA-IPFire stellt zwei Schaltflächen zur Steuerung der IPFire-Internetverbindung bereit:
+
+* **Connect** startet die IPFire-Internetverbindung.
+* **Disconnect** beendet die IPFire-Internetverbindung.
+
+Die Schaltflächen verwenden den dedizierten Endpunkt `ha-ipfire.cgi` auf der IPFire-Firewall. Das CGI verwendet die native Verbindungssteuerung und Authentifizierung von IPFire.
+
+### Installation des IPFire-CGI
+
+Das CGI-Skript befindet sich im Repository unter:
+
+```text
+ipfire/ha-ipfire.cgi
+```
+
+Das CGI muss manuell auf der IPFire-Firewall installiert werden. HACS installiert nur die Home-Assistant-Integration und kann keine Dateien auf das separate IPFire-System kopieren.
+
+Das CGI nach folgendem Pfad kopieren:
+
+```text
+/srv/web/ipfire/cgi-bin/ha-ipfire.cgi
+```
+
+Anschließend Besitzer und Berechtigungen setzen:
+
+```bash
+chown root:root /srv/web/ipfire/cgi-bin/ha-ipfire.cgi
+chmod 755 /srv/web/ipfire/cgi-bin/ha-ipfire.cgi
+```
+
+Das CGI verwendet die bestehende Authentifizierung der IPFire-Weboberfläche. Es werden keine zusätzlichen CGI-Zugangsdaten benötigt.
+
+**Sicherheit:** Das CGI sollte ausschließlich über die vertrauenswürdige IPFire-Weboberfläche erreichbar sein und darf nicht gegenüber nicht vertrauenswürdigen Netzwerken freigegeben werden.
 
 ## Abfrageintervall
 
@@ -409,6 +502,8 @@ Diesem Gerät werden folgende Sensoren zugeordnet:
 * Upload
 * Download Speed
 * Upload Speed
+* Verbindungsdauer
+* Verbindungsstatus
 
 ## Home Assistant
 
