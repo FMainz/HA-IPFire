@@ -129,10 +129,21 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
             connection = payload["connection"]
             traffic = payload["traffic"]
 
-            rx_bytes = self._parse_counter(traffic.get("rx_bytes"))
-            tx_bytes = self._parse_counter(traffic.get("tx_bytes"))
-
             connection_state = str(connection["state"])
+
+            rx_value = traffic.get("rx_bytes")
+            tx_value = traffic.get("tx_bytes")
+
+            if rx_value is None:
+                rx_bytes = self._previous_rx_bytes or 0
+            else:
+                rx_bytes = self._parse_counter(rx_value)
+
+            if tx_value is None:
+                tx_bytes = self._previous_tx_bytes or 0
+            else:
+                tx_bytes = self._parse_counter(tx_value)
+
             connected_since = self._parse_optional_int(
                 connection.get("connected_since")
             )
@@ -152,7 +163,8 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         tx_rate = 0.0
 
         if (
-            self._previous_rx_bytes is not None
+            connection_state != "closed"
+            and self._previous_rx_bytes is not None
             and self._previous_tx_bytes is not None
             and self._previous_timestamp is not None
         ):
