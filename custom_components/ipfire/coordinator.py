@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import time
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import timedelta
 
@@ -69,6 +70,11 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         """Return the HA-IPFire API URL."""
         return f"{self.base_url}{HA_IPFIRE_PATH}"
 
+    @property
+    def speed_url(self) -> str:
+        """Return the IPFire speed.cgi URL."""
+        return f"{self.base_url}/cgi-bin/speed.cgi"
+
     def _auth(self) -> aiohttp.BasicAuth:
         """Return HTTP basic authentication."""
         return aiohttp.BasicAuth(self.username, self.password)
@@ -87,8 +93,29 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
                         "Invalid IPFire username or password"
                     )
 
-                response.raise_for_status()
-                payload = await response.json(content_type=None)
+                if response.status == 404:
+                    _LOGGER.debug(
+                        "HA-IPFire CGI not available, falling back to speed.cgi"
+                    )
+
+                    async with self.session.get(
+                        self.speed_url,
+                        auth=self._auth(),
+                        ssl=self.verify_ssl,
+                        timeout=aiohttp.ClientTimeout(total=10),
+                    ) as speed_response:
+                        if speed_response.status in (401, 403):
+                            raise ConfigEntryAuthFailed(
+                                "Invalid IPFire username or password"
+                            )
+
+                        speed_response.raise_for_status()
+                        payload = await speed_response.text()
+                        payload = self._parse_speed_cgi(payload)
+
+                else:
+                    response.raise_for_status()
+                    payload = await response.json(content_type=None)
 
         except ConfigEntryAuthFailed:
             raise
@@ -213,6 +240,26 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
 
         # Refresh immediately so HA sees the new connection state.
         await self.async_request_refresh()
+
+    @staticmethod
+    def _parse_speed_cgi(payload: str) -> dict:
+        """Parse the XML response from IPFire speed.cgi."""
+
+        root = ET.fromstring(payload)
+
+        return {
+            "connection": {
+                "state": "unavailable",
+                "connected_since": None,
+                "duration": 0,
+                "duration_text": "",
+                "profile": "",
+            },
+            "traffic": {
+                "rx_bytes": root.findtext("rxb", "0"),
+                "tx_bytes": root.findtext("txb", "0"),
+            },
+        }
 
     @staticmethod
     def _parse_counter(value: object) -> int:

@@ -24,6 +24,8 @@ PLATFORMS: list[str] = ["button", "sensor"]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
+CONFIG_ENTRY_VERSION = 2
+
 
 @dataclass(slots=True)
 class IPFireRuntimeData:
@@ -33,6 +35,21 @@ class IPFireRuntimeData:
 
 
 type IPFireConfigEntry = ConfigEntry[IPFireRuntimeData]
+
+
+async def async_migrate_entry(
+    hass: HomeAssistant,
+    config_entry: IPFireConfigEntry,
+) -> bool:
+    """Migrate an existing HA-IPFire config entry."""
+
+    if config_entry.version == 1:
+        hass.config_entries.async_update_entry(
+            config_entry,
+            version=CONFIG_ENTRY_VERSION,
+        )
+
+    return True
 
 
 async def async_setup_entry(
