@@ -81,7 +81,12 @@
         "name": "Connection Duration"
       },
       "connection_state": {
-        "name": "Connection State"
+        "name": "Connection State",
+        "state": {
+          "connected": "Connected",
+          "connecting": "Connecting",
+          "closed": "Disconnected"
+        }
       }
     },
     "button": {

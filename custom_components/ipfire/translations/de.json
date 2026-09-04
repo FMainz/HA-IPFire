@@ -81,7 +81,12 @@
         "name": "Verbindungsdauer"
       },
       "connection_state": {
-        "name": "Verbindungsstatus"
+        "name": "Verbindungsstatus",
+        "state": {
+          "connected": "Verbunden",
+          "connecting": "Verbinden",
+          "closed": "Getrennt"
+        }
       }
     },
     "button": {
