@@ -223,22 +223,20 @@ class ConfigFlow(
 
         schema = connection_schema()
 
-        schema = vol.All(
-            schema,
-            vol.Schema(
-                {
-                    vol.Required(
-                        CONF_SCAN_INTERVAL,
-                        default=DEFAULT_SCAN_INTERVAL,
-                    ): vol.All(
-                        vol.Coerce(int),
-                        vol.Range(
-                            min=MIN_SCAN_INTERVAL,
-                            max=MAX_SCAN_INTERVAL,
-                        ),
-                    )
-                }
-            ),
+        schema = vol.Schema(
+            {
+                **schema.schema,
+                vol.Required(
+                    CONF_SCAN_INTERVAL,
+                    default=DEFAULT_SCAN_INTERVAL,
+                ): vol.All(
+                    vol.Coerce(int),
+                    vol.Range(
+                        min=MIN_SCAN_INTERVAL,
+                        max=MAX_SCAN_INTERVAL,
+                    ),
+                ),
+            }
         )
 
         return self.async_show_form(
