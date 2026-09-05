@@ -74,14 +74,14 @@ HA-IPFire provides two buttons to control the IPFire internet connection:
 * **Connect** starts the IPFire internet connection.
 * **Disconnect** stops the IPFire internet connection.
 
-The buttons use the dedicated `ha-ipfire.cgi` endpoint on the IPFire firewall. The CGI uses IPFire's native connection control and authentication.
+The buttons use the dedicated `api.cgi` endpoint on the IPFire firewall. The CGI uses IPFire's native connection control and authentication.
 
 ### IPFire CGI installation
 
 The CGI script is included in this repository at:
 
 ```text
-ipfire/ha-ipfire.cgi
+ipfire/api.cgi
 ```
 
 The CGI must be installed manually on the IPFire firewall. HACS installs only the Home Assistant integration and cannot copy files to the separate IPFire system.
@@ -89,14 +89,14 @@ The CGI must be installed manually on the IPFire firewall. HACS installs only th
 Copy the CGI to:
 
 ```text
-/srv/web/ipfire/cgi-bin/ha-ipfire.cgi
+/srv/web/ipfire/cgi-bin/api.cgi
 ```
 
 Then set the correct ownership and permissions:
 
 ```bash
-chown root:root /srv/web/ipfire/cgi-bin/ha-ipfire.cgi
-chmod 755 /srv/web/ipfire/cgi-bin/ha-ipfire.cgi
+chown root:root /srv/web/ipfire/cgi-bin/api.cgi
+chmod 755 /srv/web/ipfire/cgi-bin/api.cgi
 ```
 
 The CGI uses the existing IPFire web interface authentication. No additional CGI credentials are required.
@@ -333,14 +333,14 @@ HA-IPFire stellt zwei Schaltflächen zur Steuerung der IPFire-Internetverbindung
 * **Connect** startet die IPFire-Internetverbindung.
 * **Disconnect** beendet die IPFire-Internetverbindung.
 
-Die Schaltflächen verwenden den dedizierten Endpunkt `ha-ipfire.cgi` auf der IPFire-Firewall. Das CGI verwendet die native Verbindungssteuerung und Authentifizierung von IPFire.
+Die Schaltflächen verwenden den dedizierten Endpunkt `api.cgi` auf der IPFire-Firewall. Das CGI verwendet die native Verbindungssteuerung und Authentifizierung von IPFire.
 
 ### Installation des IPFire-CGI
 
 Das CGI-Skript befindet sich im Repository unter:
 
 ```text
-ipfire/ha-ipfire.cgi
+ipfire/api.cgi
 ```
 
 Das CGI muss manuell auf der IPFire-Firewall installiert werden. HACS installiert nur die Home-Assistant-Integration und kann keine Dateien auf das separate IPFire-System kopieren.
@@ -348,14 +348,14 @@ Das CGI muss manuell auf der IPFire-Firewall installiert werden. HACS installier
 Das CGI nach folgendem Pfad kopieren:
 
 ```text
-/srv/web/ipfire/cgi-bin/ha-ipfire.cgi
+/srv/web/ipfire/cgi-bin/api.cgi
 ```
 
 Anschließend Besitzer und Berechtigungen setzen:
 
 ```bash
-chown root:root /srv/web/ipfire/cgi-bin/ha-ipfire.cgi
-chmod 755 /srv/web/ipfire/cgi-bin/ha-ipfire.cgi
+chown root:root /srv/web/ipfire/cgi-bin/api.cgi
+chmod 755 /srv/web/ipfire/cgi-bin/api.cgi
 ```
 
 Das CGI verwendet die bestehende Authentifizierung der IPFire-Weboberfläche. Es werden keine zusätzlichen CGI-Zugangsdaten benötigt.

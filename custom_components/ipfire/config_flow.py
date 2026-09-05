@@ -27,7 +27,7 @@ from .const import (
     DOMAIN,
     MAX_SCAN_INTERVAL,
     MIN_SCAN_INTERVAL,
-    HA_IPFIRE_PATH,
+    API_PATH,
 )
 
 
@@ -39,7 +39,7 @@ async def validate_input(
 
     url = (
         data[CONF_URL].rstrip("/")
-        + HA_IPFIRE_PATH
+        + API_PATH
     )
 
     session = async_get_clientsession(hass)

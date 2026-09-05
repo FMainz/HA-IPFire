@@ -15,7 +15,7 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 
-from .const import DOMAIN, HA_IPFIRE_PATH
+from .const import DOMAIN, API_PATH
 _LOGGER = logging.getLogger(__name__)
 
 @dataclass(frozen=True, slots=True)
@@ -67,8 +67,8 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
 
     @property
     def api_url(self) -> str:
-        """Return the HA-IPFire API URL."""
-        return f"{self.base_url}{HA_IPFIRE_PATH}"
+        """Return the IPFire API URL."""
+        return f"{self.base_url}{API_PATH}"
 
     @property
     def speed_url(self) -> str:

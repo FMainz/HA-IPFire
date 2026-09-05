@@ -14,4 +14,4 @@ DEFAULT_SCAN_INTERVAL = 30
 MIN_SCAN_INTERVAL = 5
 MAX_SCAN_INTERVAL = 60
 
-HA_IPFIRE_PATH = "/cgi-bin/ha-ipfire.cgi"
+API_PATH = "/cgi-bin/api.cgi"
