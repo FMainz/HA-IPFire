@@ -2,7 +2,7 @@
 
 🇬🇧 [English documentation](README.md)
 
-[![HA-IPFire zu Home Assistant hinzufügen](https://my.home-assistant.io/badges/integration.svg)](https://my.home-assistant.io/redirect/integration/?domain=ipfire)
+[![HA-IPFire installieren](https://my.home-assistant.io/badges/integration.svg)](https://my.home-assistant.io/redirect/integration/?domain=ipfire)
 
 ## Inhaltsverzeichnis
 
