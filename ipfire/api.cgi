@@ -1,14 +1,10 @@
 #!/usr/bin/perl
 ###############################################################################
 #                                                                             #
-# HA-IPFire - Home Assistant API for IPFire                                 #
+# IPFireAPI for Home Assistant                                                #
 #                                                                             #
-# This CGI is intended to be installed manually on an IPFire system during   #
-# development of HA-IPFire v0.3.0.                                           #
-#                                                                             #
-# It currently provides read-only connection information.                     #
-# Connect/disconnect actions will be added only after the read-only API has  #
-# been tested successfully.                                                  #
+# This CGI provides system, network, service, add-on, traffic, and            #
+# connection information from IPFire for the HA-IPFire integration.           #
 #                                                                             #
 ###############################################################################
 
