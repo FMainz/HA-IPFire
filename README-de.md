@@ -2,7 +2,7 @@
 
 🇬🇧 [English documentation](README.md)
 
-[![HA-IPFire installieren](https://my.home-assistant.io/badges/integration.svg)](https://my.home-assistant.io/redirect/integration/?domain=ipfire)
+[![Open HA-IPFire in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FMainz&repository=HA-IPFire&category=integration)
 
 ## Inhaltsverzeichnis
 
