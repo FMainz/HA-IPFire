@@ -87,6 +87,104 @@
           "connecting": "Connecting",
           "closed": "Disconnected"
         }
+      },
+      "system_version": {
+        "name": "IPFire Version"
+      },
+      "pakfire_version": {
+        "name": "Pakfire Version"
+      },
+      "kernel_version": {
+        "name": "Kernel Version"
+      },
+      "architecture": {
+        "name": "Architecture"
+      },
+      "cpu_model": {
+        "name": "CPU Model"
+      },
+      "model": {
+        "name": "Model"
+      },
+      "vendor": {
+        "name": "Vendor"
+      },
+      "cpu_count": {
+        "name": "CPU Cores"
+      },
+      "memory": {
+        "name": "Memory"
+      },
+      "root_size": {
+        "name": "Root Filesystem"
+      },
+      "package_updates": {
+        "name": "Package Updates"
+      },
+      "external_ip": {
+        "name": "External IP Address"
+      },
+      "external_hostname": {
+        "name": "External Hostname"
+      }
+    },
+    "binary_sensor": {
+      "virtual": {
+        "name": "Virtual"
+      },
+      "core_update": {
+        "name": "Core Update Available"
+      },
+      "network_blue": {
+        "name": "Blue (WiFi)"
+      },
+      "network_green": {
+        "name": "Green (LAN)"
+      },
+      "network_orange": {
+        "name": "Orange (DMZ)"
+      },
+      "network_red": {
+        "name": "Red (WAN)"
+      },
+      "service_dhcp": {
+        "name": "DHCP Server"
+      },
+      "service_web_server": {
+        "name": "Web Server"
+      },
+      "service_cron": {
+        "name": "CRON Server"
+      },
+      "service_dns_resolver": {
+        "name": "DNS Resolver"
+      },
+      "service_logging": {
+        "name": "Logging Server"
+      },
+      "service_ntp": {
+        "name": "NTP Server"
+      },
+      "service_ssh": {
+        "name": "Secure Shell Server"
+      },
+      "service_vpn": {
+        "name": "VPN"
+      },
+      "service_web_proxy": {
+        "name": "Web Proxy"
+      },
+      "service_ips": {
+        "name": "Intrusion Prevention System"
+      },
+      "service_ovpn_roadwarrior": {
+        "name": "OpenVPN Roadwarrior Server"
+      },
+      "service_lldp": {
+        "name": "Link Layer Discovery Protocol"
+      },
+      "service_dbus": {
+        "name": "D-Bus Daemon"
       }
     },
     "button": {

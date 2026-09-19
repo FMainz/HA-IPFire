@@ -20,7 +20,7 @@ from .const import (
 from .coordinator import IPFireCoordinator
 
 
-PLATFORMS: list[str] = ["button", "sensor"]
+PLATFORMS: list[str] = ["binary_sensor", "button", "sensor"]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 

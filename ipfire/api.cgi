@@ -15,6 +15,8 @@ require '/var/ipfire/general-functions.pl';
 require "/opt/pakfire/lib/functions.pl";
 use JSON::PP;
 
+my $api_version = "1";
+
 # -----------------------------------------------------------------------------
 # JSON helper
 # -----------------------------------------------------------------------------
@@ -263,11 +265,102 @@ print "Cache-Control: no-store, no-cache, must-revalidate\r\n";
 print "Pragma: no-cache\r\n";
 print "\r\n";
 
-# The first version is deliberately read-only.
+# The API provides read-only system data and connection control.
 my $method = $ENV{'REQUEST_METHOD'} // 'GET';
 
+# -----------------------------------------------------------------------------
+# Connection control
+# -----------------------------------------------------------------------------
+#
+# Connection actions are only accepted from the HA-IPFire integration.
+# The IPFire WebGUI already protects this CGI with HTTP authentication.
+#
+# HA-IPFire sends:
+#   X-HA-IPFire-API: 1
+#
+# and a form-encoded POST body:
+#   action=connect
+#   action=disconnect
+#
+if ($method eq 'POST') {
+    my $api_header = $ENV{'HTTP_X_HA_IPFIRE_API'} // '';
+
+    if ($api_header ne '1') {
+        print '{"api_version":'.$api_version.',"error":"forbidden"}';
+        exit 0;
+    }
+
+    my $content_length = $ENV{'CONTENT_LENGTH'} // 0;
+    my $body = '';
+
+    if ($content_length =~ /^\d+$/ && $content_length > 0) {
+        read(STDIN, $body, $content_length);
+    }
+
+    my $action = '';
+    if ($body =~ /(?:^|&)action=([^&]*)/) {
+        $action = $1;
+        $action =~ tr/+/ /;
+        $action =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
+    }
+
+    if ($action ne 'connect' && $action ne 'disconnect') {
+        print '{"api_version":'.$api_version.',"error":"invalid_action"}';
+        exit 0;
+    }
+
+    my $redctrl = '/usr/local/bin/redctrl';
+
+    unless (-x $redctrl) {
+        print '{"api_version":'.$api_version.',"error":"redctrl_not_found"}';
+        exit 0;
+    }
+
+    my $command;
+
+    if ($action eq 'connect') {
+        $command = -e "${General::swroot}/red/active"
+            ? 'restart'
+            : 'start';
+    } elsif ($action eq 'disconnect') {
+        if (!-e "${General::swroot}/red/active") {
+            print '{"api_version":'.$api_version.',"result":"ok"}';
+            exit 0;
+        }
+
+        $command = 'stop';
+    }
+    unless (defined $command) {
+        print '{"api_version":'.$api_version.',"result":"error","error":"invalid_action"}';
+        exit 0;
+    }
+
+    my $result;
+
+    {
+        open my $null, '>', '/dev/null'
+            or die "Cannot open /dev/null: $!";
+
+        local *STDOUT = $null;
+        local *STDERR = $null;
+
+        $result = system("$redctrl $command >/dev/null 2>&1");
+    }
+
+    if ($result == 0) {
+        print '{"api_version":'.$api_version.',"result":"ok"}';
+    } else {
+        my $exit_code = $result >> 8;
+        print '{"api_version":'.$api_version.',"result":"error","error":"redctrl_failed","exit_code":'
+            . $exit_code
+            . "}";
+    }
+
+    exit 0;
+}
+
 if ($method ne 'GET') {
-    print '{"api_version":1,"error":"method_not_allowed"}\n';
+    print '{"api_version":'.$api_version.',"error":"method_not_allowed"}';
     exit 0;
 }
 
@@ -312,12 +405,21 @@ if (-e $active_file) {
 
 my $profile = $pppsettings{'PROFILENAME'} // '';
 
+my $external_ip = read_file("${General::swroot}/red/local-ipaddress");
+my $external_hostname = '';
+
+if ($external_ip ne '') {
+    $external_hostname =
+        (gethostbyaddr(pack("C4", split(/\./, $external_ip)), 2))[0]
+        || '';
+}
+
 # -----------------------------------------------------------------------------
 # JSON response
 # -----------------------------------------------------------------------------
 
 my @json;
-push @json, '"api_version":1';
+push @json, '"api_version":'.$api_version;
 
 push @json, '"system":{'
     . '"version":' . json_string($version)
@@ -389,6 +491,8 @@ if (defined $connected_since) {
 }
 
 push @connection, '"profile":' . json_string($profile);
+push @connection, '"external_ip":' . json_string($external_ip);
+push @connection, '"external_hostname":' . json_string($external_hostname);
 
 push @json, '"connection":{' . join(',', @connection) . '}';
 

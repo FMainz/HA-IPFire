@@ -2,8 +2,6 @@
 
 🇬🇧 [English documentation](README.md)
 
-[![HA-IPFire installieren](https://my.home-assistant.io/badges/integration.svg)](https://my.home-assistant.io/redirect/integration/?domain=ipfire)
-
 ## Inhaltsverzeichnis
 
 - [Funktionen](#funktionen)
@@ -20,6 +18,7 @@
 - [Konfiguration](#konfiguration)
 - [IPFire-Daten](#ipfire-daten)
 - [Gerät](#gerät)
+- [Verbindungssteuerung](#verbindungssteuerung)
 - [Home Assistant](#home-assistant)
 - [Support](#support)
 - [Repository](#repository)
@@ -155,6 +154,11 @@ Die Zugangsdaten werden bei der Einrichtung der Integration in Home Assistant an
 
 ## Installation
 
+Direkt über diesen Button:
+
+[![Open HA-IPFire in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FMainz&repository=HA-IPFire&category=integration)
+oder mittels HACS.
+
 ### HACS
 
 HA-IPFire kann direkt über HACS installiert werden.
@@ -239,39 +243,37 @@ Das Abfrageintervall kann zwischen **5 und 60 Sekunden** eingestellt werden.
 
 ## IPFire-Daten
 
-IPFire stellt über `speed.cgi` kumulative Trafficzähler bereit.
-
-Eine typische Antwort enthält beispielsweise:
-
-```xml
-<inetinfo>
-    <rx_kbs>0 kb/s</rx_kbs>
-    <tx_kbs>0 kb/s</tx_kbs>
-    <rxb>7307842082</rxb>
-    <txb>5579282702</txb>
-</inetinfo>
-```
-
-HA-IPFire verwendet die kumulativen Zähler `rxb` und `txb`.
-
-Die Werte `rx_kbs` und `tx_kbs` werden nicht zur Berechnung der aktuellen Übertragungsrate verwendet.
-
-Stattdessen werden die aktuellen Download- und Upload-Geschwindigkeiten aus der Differenz zwischen zwei aufeinanderfolgenden Messungen der kumulativen Zähler berechnet.
-
-Dadurch werden auch Probleme mit IPFire-Installationen vermieden, bei denen `rx_kbs` und `tx_kbs` immer mit `0 kb/s` zurückgegeben werden.
+Die Daten werden direkt aus IPFire ausgelesen. Für die Verkehrsstatistiken
+wird `speed.cgi` verwendet. Zusätzliche System-, Netzwerk-, Service- und
+Update-Informationen werden über die optionale `api.cgi` bereitgestellt.
+Technische Systeminformationen stammen dabei aus Fireinfo.
 
 ## Gerät
 
 HA-IPFire erstellt ein gemeinsames IPFire-Gerät in Home Assistant.
 
-Diesem Gerät werden folgende Sensoren zugeordnet:
+Ist `api.cgi` nicht vorhanden, werden ausschließlich folgende Sensoren
+bereitgestellt:
 
 * Download
 * Upload
 * Download Speed
 * Upload Speed
-* Verbindungsdauer
-* Verbindungsstatus
+
+Ist `api.cgi` vorhanden, stehen zusätzlich weitere Informationen zum
+IPFire-System sowie die Steuerung der Internetverbindung über die Aktionen
+`Verbinden` und `Trennen` zur Verfügung.
+
+## Verbindungssteuerung
+
+HA-IPFire kann die Internetverbindung der IPFire-Firewall direkt aus Home Assistant steuern.
+
+Über die bereitgestellten Buttons stehen folgende Aktionen zur Verfügung:
+
+* **Verbinden** – stellt die Internetverbindung her.
+* **Trennen** – trennt die Internetverbindung.
+
+Wenn bei bestehender Verbindung `Verbinden` betätigt wird, wird die aktuelle Verbindung getrennt und neu aufgebaut.
 
 ## Home Assistant
 
@@ -292,3 +294,5 @@ https://github.com/FMainz/HA-IPFire
 ## Lizenz
 
 HA-IPFire wird unter der MIT-Lizenz veröffentlicht.
+
+---

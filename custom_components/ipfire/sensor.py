@@ -26,6 +26,7 @@ class IPFireSensorDescription(SensorEntityDescription):
     """Describe an IPFire sensor."""
 
     value_key: str
+    data_group: str = "root"
 
 
 SENSORS: tuple[IPFireSensorDescription, ...] = (
@@ -81,6 +82,88 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         key="connection_state",
         translation_key="connection_state",
         value_key="connection_state",
+    ),
+    IPFireSensorDescription(
+        key="external_ip",
+        translation_key="external_ip",
+        value_key="external_ip",
+    ),
+    IPFireSensorDescription(
+        key="external_hostname",
+        translation_key="external_hostname",
+        value_key="external_hostname",
+    ),
+    IPFireSensorDescription(
+        key="system_version",
+        translation_key="system_version",
+        value_key="version",
+        data_group="system",
+    ),
+    IPFireSensorDescription(
+        key="pakfire_version",
+        translation_key="pakfire_version",
+        value_key="pakfire_version",
+        data_group="system",
+    ),
+    IPFireSensorDescription(
+        key="kernel_version",
+        translation_key="kernel_version",
+        value_key="kernel_version",
+        data_group="system",
+    ),
+    IPFireSensorDescription(
+        key="architecture",
+        translation_key="architecture",
+        value_key="architecture",
+        data_group="system",
+    ),
+    IPFireSensorDescription(
+        key="cpu_model",
+        translation_key="cpu_model",
+        value_key="cpu_model",
+        data_group="system",
+    ),
+    IPFireSensorDescription(
+        key="model",
+        translation_key="model",
+        value_key="model",
+        data_group="system",
+    ),
+    IPFireSensorDescription(
+        key="vendor",
+        translation_key="vendor",
+        value_key="vendor",
+        data_group="system",
+    ),
+    IPFireSensorDescription(
+        key="cpu_count",
+        translation_key="cpu_count",
+        value_key="cpu_count",
+        data_group="system",
+    ),
+    IPFireSensorDescription(
+        key="memory",
+        translation_key="memory",
+        value_key="memory",
+        data_group="system",
+        device_class=SensorDeviceClass.DATA_SIZE,
+        native_unit_of_measurement=UnitOfInformation.KIBIBYTES,
+        suggested_display_precision=1,
+    ),
+    IPFireSensorDescription(
+        key="root_size",
+        translation_key="root_size",
+        value_key="root_size",
+        data_group="system",
+        device_class=SensorDeviceClass.DATA_SIZE,
+        native_unit_of_measurement=UnitOfInformation.KIBIBYTES,
+        suggested_display_precision=1,
+    ),
+    IPFireSensorDescription(
+        key="package_updates",
+        translation_key="package_updates",
+        value_key="package_updates",
+        data_group="system",
     ),
 )
 
@@ -138,7 +221,9 @@ class IPFireTrafficSensor(
         if self.coordinator.data is None:
             return None
 
-        return getattr(
-            self.coordinator.data,
-            self.entity_description.value_key,
-        )
+        if self.entity_description.data_group == "system":
+            data = self.coordinator.data.system
+        else:
+            data = self.coordinator.data
+
+        return getattr(data, self.entity_description.value_key, None)
