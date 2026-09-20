@@ -18,6 +18,36 @@ from homeassistant.helpers.update_coordinator import (
 from .const import DOMAIN, API_PATH
 _LOGGER = logging.getLogger(__name__)
 
+
+@dataclass(frozen=True, slots=True)
+class IPFireSystemData:
+    """Represent system information received from IPFire."""
+
+    version: str | None
+    pakfire_version: str | None
+    kernel_version: str | None
+    architecture: str | None
+    cpu_model: str | None
+    cpu_count: int | None
+    model: str | None
+    vendor: str | None
+    memory: int | None
+    root_size: int | None
+    virtual: bool | None
+    core_update: bool | None
+    package_updates: int | None
+
+
+@dataclass(frozen=True, slots=True)
+class IPFireNetworkData:
+    """Represent network information received from IPFire."""
+
+    blue: bool | None
+    green: bool | None
+    orange: bool | None
+    red: bool | None
+
+
 @dataclass(frozen=True, slots=True)
 class IPFireData:
     """Represent data received from IPFire."""
@@ -31,6 +61,12 @@ class IPFireData:
     connection_duration: int
     connection_duration_text: str
     profile: str
+    external_ip: str
+    external_hostname: str
+    system: IPFireSystemData
+    network: IPFireNetworkData
+    services: dict[str, bool]
+    addons: dict[str, dict[str, bool]]
 
 
 class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
@@ -128,9 +164,34 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         try:
             connection = payload["connection"]
             traffic = payload["traffic"]
+            system = payload.get("system", {})
+            network = payload.get("network", {})
+            services = payload.get("services", {})
+            addons = payload.get("addons", {})
+            if not isinstance(connection, dict):
+                raise ValueError("Invalid connection data from IPFire")
 
-            connection_state = str(connection["state"])
+            if not isinstance(traffic, dict):
+                raise ValueError("Invalid traffic data from IPFire")
 
+            if not isinstance(system, dict):
+                raise ValueError("Invalid system data from IPFire")
+
+            if not isinstance(network, dict):
+                raise ValueError("Invalid network data from IPFire")
+
+            if not isinstance(services, dict):
+                raise ValueError("Invalid services data from IPFire")
+
+            if not isinstance(addons, dict):
+                raise ValueError("Invalid addons data from IPFire")
+            connection_state = str(connection.get("state", "unavailable"))
+
+            if "rx_bytes" not in traffic:
+                raise ValueError("Missing RX traffic data from IPFire")
+
+            if "tx_bytes" not in traffic:
+                raise ValueError("Missing TX traffic data from IPFire")
             rx_value = traffic.get("rx_bytes")
             tx_value = traffic.get("tx_bytes")
 
@@ -152,6 +213,31 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
                 connection.get("duration_text", "")
             )
             profile = str(connection.get("profile", ""))
+            external_ip = str(connection.get("external_ip", ""))
+            external_hostname = str(connection.get("external_hostname", ""))
+
+            system_data = IPFireSystemData(
+                version=system.get("version"),
+                pakfire_version=system.get("pakfire_version"),
+                kernel_version=system.get("kernel_version"),
+                architecture=system.get("architecture"),
+                cpu_model=system.get("cpu_model"),
+                cpu_count=system.get("cpu_count"),
+                model=system.get("model"),
+                vendor=system.get("vendor"),
+                memory=system.get("memory"),
+                root_size=system.get("root_size"),
+                virtual=system.get("virtual"),
+                core_update=system.get("core_update"),
+                package_updates=system.get("package_updates"),
+            )
+
+            network_data = IPFireNetworkData(
+                blue=network.get("blue"),
+                green=network.get("green"),
+                orange=network.get("orange"),
+                red=network.get("red"),
+            )
 
         except (KeyError, TypeError, ValueError) as err:
             raise UpdateFailed(
@@ -194,6 +280,12 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
             connection_duration=connection_duration,
             connection_duration_text=connection_duration_text,
             profile=profile,
+            external_ip=external_ip,
+            external_hostname=external_hostname,
+            system=system_data,
+            network=network_data,
+            services=services,
+            addons=addons,
         )
 
     async def async_connect(self) -> None:
@@ -271,6 +363,10 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
                 "rx_bytes": root.findtext("rxb", "0"),
                 "tx_bytes": root.findtext("txb", "0"),
             },
+            "system": {},
+            "network": {},
+            "services": {},
+            "addons": {},
         }
 
     @staticmethod

@@ -2,8 +2,6 @@
 
 🇩🇪 [Deutsche Dokumentation](README-de.md)
 
-[![Open HA-IPFire in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FMainz&repository=HA-IPFire&category=integration)
-
 ## Contents
 
 - [Features](#features)
@@ -20,6 +18,7 @@
 - [Configuration](#configuration)
 - [IPFire data](#ipfire-data)
 - [Device](#device)
+- [Connection control](#connection-control)
 - [Home Assistant](#home-assistant)
 - [Support](#support)
 - [Repository](#repository)
@@ -156,6 +155,10 @@ The credentials are configured when adding the integration to Home Assistant.
 
 ## Installation
 
+Directly via this button:
+
+[![Open HA-IPFire in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FMainz&repository=HA-IPFire&category=integration)
+
 ### HACS
 
 HA-IPFire can be installed directly through HACS.
@@ -232,39 +235,37 @@ The polling interval can be configured between **5 and 60 seconds**.
 
 ## IPFire data
 
-IPFire provides cumulative traffic counters through `speed.cgi`.
-
-A typical response contains values similar to:
-
-```xml
-<inetinfo>
-    <rx_kbs>0 kb/s</rx_kbs>
-    <tx_kbs>0 kb/s</tx_kbs>
-    <rxb>7307842082</rxb>
-    <txb>5579282702</txb>
-</inetinfo>
-```
-
-HA-IPFire uses the cumulative `rxb` and `txb` counters.
-
-The `rx_kbs` and `tx_kbs` values are not used for calculating the current transfer rate.
-
-Instead, the current download and upload speeds are calculated from the difference between two consecutive counter readings.
-
-This also avoids problems with IPFire installations where `rx_kbs` and `tx_kbs` are reported as `0 kb/s`.
+The data is read directly from IPFire. Traffic statistics are provided by
+`speed.cgi`. Additional system, network, service, and update information is
+provided through the optional `api.cgi`. Technical system information is
+obtained from Fireinfo.
 
 ## Device
 
-HA-IPFire creates one IPFire device in Home Assistant.
+HA-IPFire creates a single IPFire device in Home Assistant.
 
-The following sensors are associated with this device:
+If `api.cgi` is not available, only the following sensors are provided:
 
 * Download
 * Upload
 * Download Speed
 * Upload Speed
-* Connection Duration
-* Connection State
+
+If `api.cgi` is available, additional information about the IPFire system
+as well as control of the Internet connection through the `Connect` and
+`Disconnect` actions is available.
+
+## Connection control
+
+HA-IPFire can control the Internet connection of the IPFire firewall directly
+from Home Assistant.
+
+The following actions are available through the provided buttons:
+
+* **Connect** – establishes the Internet connection.
+* **Disconnect** – disconnects the Internet connection.
+
+If Connect is pressed while a connection is already active, the current connection is disconnected and re-established.
 
 ## Home Assistant
 
