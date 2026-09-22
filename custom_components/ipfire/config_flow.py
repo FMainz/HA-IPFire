@@ -5,6 +5,7 @@ from typing import Any
 import aiohttp
 import voluptuous as vol
 
+from homeassistant.helpers import selector
 from homeassistant import config_entries
 from homeassistant.config_entries import (
     ConfigFlowResult,
@@ -102,12 +103,14 @@ def scan_interval_schema(
             vol.Required(
                 CONF_SCAN_INTERVAL,
                 default=default,
-            ): vol.All(
-                vol.Coerce(int),
-                vol.Range(
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
                     min=MIN_SCAN_INTERVAL,
                     max=MAX_SCAN_INTERVAL,
-                ),
+                    step=5,
+                    mode=selector.NumberSelectorMode.SLIDER,
+                    unit_of_measurement="s",
+                )
             )
         }
     )
@@ -229,12 +232,14 @@ class ConfigFlow(
                 vol.Required(
                     CONF_SCAN_INTERVAL,
                     default=DEFAULT_SCAN_INTERVAL,
-                ): vol.All(
-                    vol.Coerce(int),
-                    vol.Range(
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
                         min=MIN_SCAN_INTERVAL,
                         max=MAX_SCAN_INTERVAL,
-                    ),
+                        step=5,
+                        mode=selector.NumberSelectorMode.SLIDER,
+                        unit_of_measurement="s",
+                    )
                 ),
             }
         )

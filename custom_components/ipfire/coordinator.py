@@ -131,7 +131,7 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
 
                 if response.status == 404:
                     _LOGGER.debug(
-                        "HA-IPFire CGI not available, falling back to speed.cgi"
+                        "IPFire-API not available, falling back to speed.cgi"
                     )
 
                     async with self.session.get(

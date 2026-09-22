@@ -14,6 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from .coordinator import IPFireCoordinator
 
@@ -27,6 +28,7 @@ class IPFireSensorDescription(SensorEntityDescription):
 
     value_key: str
     data_group: str = "root"
+    entity_registry_enabled_default: bool = True
 
 
 SENSORS: tuple[IPFireSensorDescription, ...] = (
@@ -37,6 +39,7 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         device_class=SensorDeviceClass.DATA_SIZE,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfInformation.BYTES,
+        suggested_unit_of_measurement=UnitOfInformation.MEGABYTES,
         suggested_display_precision=1,
     ),
     IPFireSensorDescription(
@@ -46,6 +49,7 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         device_class=SensorDeviceClass.DATA_SIZE,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfInformation.BYTES,
+        suggested_unit_of_measurement=UnitOfInformation.MEGABYTES,
         suggested_display_precision=1,
     ),
     IPFireSensorDescription(
@@ -79,67 +83,90 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         suggested_display_precision=1,
     ),
     IPFireSensorDescription(
+        key="connection_duration_text",
+        translation_key="connection_duration_text",
+        value_key="connection_duration_text",
+        entity_registry_enabled_default=False,
+    ),
+    IPFireSensorDescription(
         key="connection_state",
         translation_key="connection_state",
         value_key="connection_state",
     ),
     IPFireSensorDescription(
+        key="connected_since",
+        translation_key="connected_since",
+        value_key="connected_since",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        entity_registry_enabled_default=False,
+    ),
+    IPFireSensorDescription(
         key="external_ip",
         translation_key="external_ip",
         value_key="external_ip",
+        entity_registry_enabled_default=False,
     ),
     IPFireSensorDescription(
         key="external_hostname",
         translation_key="external_hostname",
         value_key="external_hostname",
+        entity_registry_enabled_default=False,
     ),
     IPFireSensorDescription(
         key="system_version",
         translation_key="system_version",
         value_key="version",
         data_group="system",
+        entity_registry_enabled_default=False,
     ),
     IPFireSensorDescription(
         key="pakfire_version",
         translation_key="pakfire_version",
         value_key="pakfire_version",
         data_group="system",
+        entity_registry_enabled_default=False,
     ),
     IPFireSensorDescription(
         key="kernel_version",
         translation_key="kernel_version",
         value_key="kernel_version",
         data_group="system",
+        entity_registry_enabled_default=False,
     ),
     IPFireSensorDescription(
         key="architecture",
         translation_key="architecture",
         value_key="architecture",
         data_group="system",
+        entity_registry_enabled_default=False,
     ),
     IPFireSensorDescription(
         key="cpu_model",
         translation_key="cpu_model",
         value_key="cpu_model",
         data_group="system",
+        entity_registry_enabled_default=False,
     ),
     IPFireSensorDescription(
         key="model",
         translation_key="model",
         value_key="model",
         data_group="system",
+        entity_registry_enabled_default=False,
     ),
     IPFireSensorDescription(
         key="vendor",
         translation_key="vendor",
         value_key="vendor",
         data_group="system",
+        entity_registry_enabled_default=False,
     ),
     IPFireSensorDescription(
         key="cpu_count",
         translation_key="cpu_count",
         value_key="cpu_count",
         data_group="system",
+        entity_registry_enabled_default=False,
     ),
     IPFireSensorDescription(
         key="memory",
@@ -149,6 +176,7 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         device_class=SensorDeviceClass.DATA_SIZE,
         native_unit_of_measurement=UnitOfInformation.KIBIBYTES,
         suggested_display_precision=1,
+        entity_registry_enabled_default=False,
     ),
     IPFireSensorDescription(
         key="root_size",
@@ -158,12 +186,14 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         device_class=SensorDeviceClass.DATA_SIZE,
         native_unit_of_measurement=UnitOfInformation.KIBIBYTES,
         suggested_display_precision=1,
+        entity_registry_enabled_default=False,
     ),
     IPFireSensorDescription(
         key="package_updates",
         translation_key="package_updates",
         value_key="package_updates",
         data_group="system",
+        entity_registry_enabled_default=False,
     ),
 )
 
@@ -226,4 +256,11 @@ class IPFireTrafficSensor(
         else:
             data = self.coordinator.data
 
-        return getattr(data, self.entity_description.value_key, None)
+        value = getattr(data, self.entity_description.value_key, None)
+
+        if self.entity_description.key == "connected_since":
+            if value is None:
+                return None
+            return dt_util.utc_from_timestamp(value)
+
+        return value

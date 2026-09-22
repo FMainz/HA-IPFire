@@ -80,6 +80,12 @@
       "connection_duration": {
         "name": "Verbindungsdauer"
       },
+      "connection_duration_text": {
+        "name": "Verbindungsdauer (Text)"
+      },
+      "connected_since": {
+        "name": "Verbunden seit"
+      },
       "connection_state": {
         "name": "Verbindungsstatus",
         "state": {

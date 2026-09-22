@@ -50,7 +50,7 @@ HA-IPFire bietet folgende Funktionen:
 
 ## IPFire
 
-Die Integration ruft die Verkehrsinformationen über folgenden IPFire-Endpunkt ab:
+Die Integration im Standard ruft die Verkehrsinformationen über folgenden IPFire-Endpunkt ab:
 
 ```text
 /cgi-bin/speed.cgi
@@ -68,7 +68,7 @@ HA-IPFire verwendet die von IPFire bereitgestellten kumulativen Trafficzähler, 
 
 ## Sensoren
 
-Die Integration stellt sechs Sensoren bereit:
+Die Integration kann eine Vielzahl an Sensoren bereitstellen, zum Beispiel:
 
 * **Download**
 * **Upload**
@@ -130,6 +130,8 @@ Das Abfrageintervall kann zwischen folgenden Werten eingestellt werden:
 * **Minimum:** 5 Sekunden
 * **Standard:** 30 Sekunden
 * **Maximum:** 60 Sekunden
+
+Das Intervall kann in 5-Sekunden-Schritten über den Schieberegler in der Konfiguration eingestellt werden.
 
 Ein kürzeres Intervall sorgt für häufigere Aktualisierungen, führt aber auch zu mehr Anfragen an die IPFire-Firewall.
 

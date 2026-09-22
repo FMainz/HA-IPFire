@@ -68,7 +68,7 @@ HA-IPFire uses the cumulative traffic counters provided by IPFire to calculate t
 
 ## Sensors
 
-The integration provides six sensors:
+The integration can provide a variety of sensors, for example:
 
 * **Download**
 * **Upload**
@@ -131,6 +131,8 @@ The polling interval can be configured between:
 * **Minimum:** 5 seconds
 * **Default:** 30 seconds
 * **Maximum:** 60 seconds
+
+The interval can be adjusted in steps of 5 seconds using the slider in the configuration.
 
 A shorter interval provides more frequent updates but also results in more requests to the IPFire firewall.
 
