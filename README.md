@@ -1,8 +1,6 @@
 [![hacs][hacs_badge]][hacs]
 [![GitHub Release][releases-shield]][releases]
 [![License][license-shield]](LICENSE)
-[![GitHub total downloads](https://img.shields.io/github/downloads/FMainz/HA-IPFire/total?style=flat-square&color=red)
-[![stars](https://img.shields.io/github/stars/FMainz/HA-IPFire)](https://github.com/FMainz/HA-IPFire/stargazers)
 
 # HA-IPFire
 
