@@ -1,6 +1,4 @@
 [![hacs][hacs_badge]][hacs]
-[![GitHub Release][releases-shield]][releases]
-[![License][license-shield]](LICENSE)
 
 # HA-IPFire
 
