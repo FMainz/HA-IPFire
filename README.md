@@ -1,3 +1,10 @@
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![GitHub release](https://img.shields.io/github/release/fmainz/ha-ipfire?include_prereleases=&sort=semver&color=blue)](https://github.com/fmainz/ha-ipfire/releases/)
+![last commit](https://img.shields.io/github/last-commit/fmainz/ha-ipfire)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![GitHub total downloads](https://img.shields.io/github/downloads/fmainz/HA-IPFire/total?style=flat-square&color=red)
+[![stars](https://img.shields.io/github/stars/fmainz/ha-ipfire)](https://github.com/FMainz/HA-IPFire/stargazers)
+
 # HA-IPFire
 
 🇩🇪 [Deutsche Dokumentation](README-de.md)
