@@ -1,6 +1,8 @@
-![hacs][hacs_badge][hacs]
-![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)
-![hacs_badge][hacs]
+[![GitHub Release][releases-shield]][releases]
+[![GitHub Activity][commits-shield]][commits]
+[![License][license-shield]](LICENSE)
+[![hacs][hacs_badge]][hacs]
+[![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
 
 # HA-IPFire
 
