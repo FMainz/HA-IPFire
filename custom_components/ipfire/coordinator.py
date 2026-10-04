@@ -23,19 +23,32 @@ _LOGGER = logging.getLogger(__name__)
 class IPFireSystemData:
     """Represent system information received from IPFire."""
 
-    version: str | None
-    pakfire_version: str | None
-    kernel_version: str | None
-    architecture: str | None
-    cpu_model: str | None
-    cpu_count: int | None
-    model: str | None
-    vendor: str | None
-    memory: int | None
-    root_size: int | None
-    virtual: bool | None
-    core_update: bool | None
-    package_updates: int | None
+    version: str
+    pakfire_version: str
+    kernel_version: str
+    architecture: str
+    cpu_model: str
+    cpu_count: int
+    model: str
+    vendor: str
+    virtual: bool
+    core_update: bool
+    package_updates: int
+    uptime: int | None
+    cpu_total: int | None
+    cpu_idle: int | None
+    cpu_usage: float | None
+    memory_total: int | None
+    memory_available: int | None
+    memory_free: int | None
+    memory_buffers: int | None
+    memory_cached: int | None
+    disk_root_total: int | None
+    disk_root_used: int | None
+    disk_root_available: int | None
+    disk_root_use_percent: int | None
+    smart_temperature: int | None
+    smart_errors: int | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,6 +113,8 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         self._previous_rx_bytes: int | None = None
         self._previous_tx_bytes: int | None = None
         self._previous_timestamp: float | None = None
+        self._previous_cpu_total: int | None = None
+        self._previous_cpu_idle: int | None = None
 
     @property
     def api_url(self) -> str:
@@ -216,6 +231,33 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
             external_ip = str(connection.get("external_ip", ""))
             external_hostname = str(connection.get("external_hostname", ""))
 
+            cpu = system.get("cpu", {})
+
+            cpu_total = cpu.get("total")
+            cpu_idle = cpu.get("idle")
+
+            cpu_usage = None
+
+            if (
+                isinstance(cpu_total, int)
+                and isinstance(cpu_idle, int)
+                and self._previous_cpu_total is not None
+                and self._previous_cpu_idle is not None
+            ):
+                cpu_total_difference = cpu_total - self._previous_cpu_total
+                cpu_idle_difference = cpu_idle - self._previous_cpu_idle
+
+                if cpu_total_difference > 0 and cpu_idle_difference >= 0:
+                    cpu_usage = (
+                        1 - (cpu_idle_difference / cpu_total_difference)
+                    ) * 100
+
+                    cpu_usage = max(0.0, min(100.0, cpu_usage))
+
+            if isinstance(cpu_total, int) and isinstance(cpu_idle, int):
+                self._previous_cpu_total = cpu_total
+                self._previous_cpu_idle = cpu_idle
+
             system_data = IPFireSystemData(
                 version=system.get("version"),
                 pakfire_version=system.get("pakfire_version"),
@@ -225,13 +267,25 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
                 cpu_count=system.get("cpu_count"),
                 model=system.get("model"),
                 vendor=system.get("vendor"),
-                memory=system.get("memory"),
-                root_size=system.get("root_size"),
                 virtual=system.get("virtual"),
                 core_update=system.get("core_update"),
                 package_updates=system.get("package_updates"),
+                uptime=system.get("uptime"),
+                cpu_total=cpu_total,
+                cpu_idle=cpu_idle,
+                cpu_usage=cpu_usage,
+                memory_total=system.get("memory", {}).get("total"),
+                memory_available=system.get("memory", {}).get("available"),
+                memory_free=system.get("memory", {}).get("free"),
+                memory_buffers=system.get("memory", {}).get("buffers"),
+                memory_cached=system.get("memory", {}).get("cached"),
+                disk_root_total=system.get("disk", {}).get("root", {}).get("total"),
+                disk_root_used=system.get("disk", {}).get("root", {}).get("used"),
+                disk_root_available=system.get("disk", {}).get("root", {}).get("available"),
+                disk_root_use_percent=system.get("disk", {}).get("root", {}).get("use_percent"),
+                smart_temperature=system.get("smart", {}).get("temperature"),
+                smart_errors=system.get("smart", {}).get("errors"),
             )
-
             network_data = IPFireNetworkData(
                 blue=network.get("blue"),
                 green=network.get("green"),

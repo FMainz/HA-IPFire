@@ -12,6 +12,137 @@
       },
       "upload_rate": {
         "default": "mdi:upload-network"
+      },
+      "connection_duration": {
+        "default": "mdi:timer-outline"
+      },
+      "connection_duration_text": {
+        "default": "mdi:timer-outline"
+      },
+      "connection_state": {
+        "default": "mdi:connection"
+      },
+      "connected_since": {
+        "default": "mdi:clock-outline"
+      },
+      "external_ip": {
+        "default": "mdi:ip-network"
+      },
+      "external_hostname": {
+        "default": "mdi:dns"
+      },
+      "system_version": {
+        "default": "mdi:fire"
+      },
+      "pakfire_version": {
+        "default": "mdi:package-variant"
+      },
+      "kernel_version": {
+        "default": "mdi:linux"
+      },
+      "architecture": {
+        "default": "mdi:chip"
+      },
+      "cpu_model": {
+        "default": "mdi:cpu-64-bit"
+      },
+      "model": {
+        "default": "mdi:server"
+      },
+      "vendor": {
+        "default": "mdi:factory"
+      },
+      "cpu_count": {
+        "default": "mdi:cpu-64-bit"
+      },
+      "uptime": {
+        "default": "mdi:timer-outline"
+      },
+      "cpu_total": {
+        "default": "mdi:counter"
+      },
+      "cpu_idle": {
+        "default": "mdi:sleep"
+      },
+      "cpu_usage": {
+        "default": "mdi:cpu-64-bit"
+      },
+      "memory_total": {
+        "default": "mdi:memory"
+      },
+      "memory_available": {
+        "default": "mdi:memory"
+      },
+      "memory_free": {
+        "default": "mdi:memory"
+      },
+      "memory_buffers": {
+        "default": "mdi:memory"
+      },
+      "memory_cached": {
+        "default": "mdi:memory"
+      },
+      "disk_root_total": {
+        "default": "mdi:harddisk"
+      },
+      "disk_root_used": {
+        "default": "mdi:harddisk"
+      },
+      "disk_root_available": {
+        "default": "mdi:harddisk"
+      },
+      "disk_root_use_percent": {
+        "default": "mdi:harddisk"
+      },
+      "smart_temperature": {
+        "default": "mdi:thermometer"
+      },
+      "smart_errors": {
+        "default": "mdi:alert-circle"
+      },
+      "package_updates": {
+        "default": "mdi:package-up"
+      }
+    },
+    "binary_sensor": {
+      "service_dhcp": {
+        "default": "mdi:ip-network"
+      },
+      "service_web_server": {
+        "default": "mdi:web"
+      },
+      "service_cron": {
+        "default": "mdi:clock-outline"
+      },
+      "service_dns_resolver": {
+        "default": "mdi:dns"
+      },
+      "service_logging": {
+        "default": "mdi:text-box-search-outline"
+      },
+      "service_ntp": {
+        "default": "mdi:timer-sync-outline"
+      },
+      "service_ssh": {
+        "default": "mdi:console"
+      },
+      "service_vpn": {
+        "default": "mdi:vpn"
+      },
+      "service_web_proxy": {
+        "default": "mdi:server-network"
+      },
+      "service_ips": {
+        "default": "mdi:shield-alert-outline"
+      },
+      "service_ovpn_roadwarrior": {
+        "default": "mdi:vpn"
+      },
+      "service_lldp": {
+        "default": "mdi:lan-connect"
+      },
+      "service_dbus": {
+        "default": "mdi:bus"
       }
     }
   }

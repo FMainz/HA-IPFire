@@ -118,11 +118,50 @@
       "cpu_count": {
         "name": "CPU Cores"
       },
-      "memory": {
-        "name": "Memory"
+      "uptime": {
+        "name": "Uptime"
       },
-      "root_size": {
-        "name": "Root Filesystem"
+      "cpu_total": {
+        "name": "CPU Total"
+      },
+      "cpu_idle": {
+        "name": "CPU Idle"
+      },
+      "cpu_usage": {
+        "name": "CPU Usage"
+      },
+      "memory_total": {
+        "name": "Memory Total"
+      },
+      "memory_available": {
+        "name": "Memory Available"
+      },
+      "memory_free": {
+        "name": "Memory Free"
+      },
+      "memory_buffers": {
+        "name": "Memory Buffers"
+      },
+      "memory_cached": {
+        "name": "Memory Cached"
+      },
+      "disk_root_total": {
+        "name": "Disk Total"
+      },
+      "disk_root_used": {
+        "name": "Disk Used"
+      },
+      "disk_root_available": {
+        "name": "Disk Available"
+      },
+      "disk_root_use_percent": {
+        "name": "Disk Usage"
+      },
+      "smart_temperature": {
+        "name": "Disk Temperature"
+      },
+      "smart_errors": {
+        "name": "SMART Errors"
       },
       "package_updates": {
         "name": "Package Updates"

@@ -71,7 +71,6 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         translation_key="service_dhcp",
         value_key="dhcp",
         data_group="services",
-        icon="mdi:ip-network",
         entity_registry_enabled_default=False,
     ),
     IPFireBinarySensorDescription(
@@ -79,7 +78,6 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         translation_key="service_web_server",
         value_key="web_server",
         data_group="services",
-        icon="mdi:web",
         entity_registry_enabled_default=False,
     ),
     IPFireBinarySensorDescription(
@@ -87,7 +85,6 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         translation_key="service_cron",
         value_key="cron",
         data_group="services",
-        icon="mdi:clock-outline",
         entity_registry_enabled_default=False,
     ),
     IPFireBinarySensorDescription(
@@ -95,7 +92,6 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         translation_key="service_dns_resolver",
         value_key="dns_resolver",
         data_group="services",
-        icon="mdi:dns",
         entity_registry_enabled_default=False,
     ),
     IPFireBinarySensorDescription(
@@ -103,7 +99,6 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         translation_key="service_logging",
         value_key="logging",
         data_group="services",
-        icon="mdi:text-box-search-outline",
         entity_registry_enabled_default=False,
     ),
     IPFireBinarySensorDescription(
@@ -111,7 +106,6 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         translation_key="service_ntp",
         value_key="ntp",
         data_group="services",
-        icon="mdi:timer-sync-outline",
         entity_registry_enabled_default=False,
     ),
     IPFireBinarySensorDescription(
@@ -119,7 +113,6 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         translation_key="service_ssh",
         value_key="ssh",
         data_group="services",
-        icon="mdi:console",
         entity_registry_enabled_default=False,
     ),
     IPFireBinarySensorDescription(
@@ -127,7 +120,6 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         translation_key="service_vpn",
         value_key="vpn",
         data_group="services",
-        icon="mdi:vpn",
         entity_registry_enabled_default=False,
     ),
     IPFireBinarySensorDescription(
@@ -135,7 +127,6 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         translation_key="service_web_proxy",
         value_key="web_proxy",
         data_group="services",
-        icon="mdi:server-network",
         entity_registry_enabled_default=False,
     ),
     IPFireBinarySensorDescription(
@@ -143,7 +134,6 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         translation_key="service_ips",
         value_key="ips",
         data_group="services",
-        icon="mdi:shield-alert-outline",
         entity_registry_enabled_default=False,
     ),
     IPFireBinarySensorDescription(
@@ -151,7 +141,6 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         translation_key="service_ovpn_roadwarrior",
         value_key="ovpn_roadwarrior",
         data_group="services",
-        icon="mdi:vpn",
         entity_registry_enabled_default=False,
     ),
     IPFireBinarySensorDescription(
@@ -159,7 +148,6 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         translation_key="service_lldp",
         value_key="lldp",
         data_group="services",
-        icon="mdi:lan-connect",
         entity_registry_enabled_default=False,
     ),
     IPFireBinarySensorDescription(
@@ -167,7 +155,6 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         translation_key="service_dbus",
         value_key="dbus",
         data_group="services",
-        icon="mdi:bus",
         entity_registry_enabled_default=False,
     ),
 )
@@ -276,6 +263,19 @@ class IPFireBinarySensor(
             manufacturer="IPFire",
             model="Firewall",
         )
+
+    @property
+    def icon(self) -> str:
+        """Return the network interface icon based on its state."""
+        if self.entity_description.key in {
+            "network_red",
+            "network_green",
+            "network_blue",
+            "network_orange",
+        }:
+            return "mdi:lan-connect" if self.is_on else "mdi:lan-disconnect"
+
+        return super().icon
 
     @property
     def is_on(self) -> bool | None:
