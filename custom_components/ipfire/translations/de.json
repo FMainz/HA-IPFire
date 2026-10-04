@@ -80,6 +80,12 @@
       "connection_duration": {
         "name": "Verbindungsdauer"
       },
+      "connection_duration_text": {
+        "name": "Verbindungsdauer (Text)"
+      },
+      "connected_since": {
+        "name": "Verbunden seit"
+      },
       "connection_state": {
         "name": "Verbindungsstatus",
         "state": {
@@ -112,11 +118,50 @@
       "cpu_count": {
         "name": "CPU-Kerne"
       },
-      "memory": {
-        "name": "Arbeitsspeicher"
+      "uptime": {
+        "name": "Betriebszeit"
       },
-      "root_size": {
-        "name": "Root-Dateisystem"
+      "cpu_total": {
+        "name": "CPU Gesamt"
+      },
+      "cpu_idle": {
+        "name": "CPU Leerlauf"
+      },
+      "cpu_usage": {
+        "name": "CPU-Auslastung"
+      },
+      "memory_total": {
+        "name": "Arbeitsspeicher Gesamt"
+      },
+      "memory_available": {
+        "name": "Arbeitsspeicher Verfügbar"
+      },
+      "memory_free": {
+        "name": "Arbeitsspeicher Frei"
+      },
+      "memory_buffers": {
+        "name": "Arbeitsspeicher Puffer"
+      },
+      "memory_cached": {
+        "name": "Arbeitsspeicher Cache"
+      },
+      "disk_root_total": {
+        "name": "Speicher Gesamt"
+      },
+      "disk_root_used": {
+        "name": "Speicher Belegt"
+      },
+      "disk_root_available": {
+        "name": "Speicher Verfügbar"
+      },
+      "disk_root_use_percent": {
+        "name": "Speichernutzung"
+      },
+      "smart_temperature": {
+        "name": "Festplattentemperatur"
+      },
+      "smart_errors": {
+        "name": "SMART-Fehler"
       },
       "package_updates": {
         "name": "Paket-Updates"

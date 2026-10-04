@@ -96,6 +96,244 @@ sub system_data {
     );
 }
 
+sub cpu_data {
+    open(my $fh, '<', '/proc/stat') or return (undef, undef);
+
+    my @fields;
+
+    while (my $line = <$fh>) {
+        if ($line =~ /^cpu\s+(.+)$/) {
+            @fields = split(/\s+/, $1);
+            last;
+        }
+    }
+
+    close($fh);
+
+    return (undef, undef) unless @fields >= 8;
+
+    foreach my $value (@fields[0 .. 7]) {
+        return (undef, undef) unless $value =~ /^\d+$/;
+    }
+
+    # user + nice + system + idle + iowait + irq + softirq + steal
+    my $total = 0;
+    $total += $_ for @fields[0 .. 7];
+
+    # idle + iowait
+    my $idle = $fields[3] + $fields[4];
+
+    return (int($total), int($idle));
+}
+
+sub memory_data {
+    open(my $fh, '<', '/proc/meminfo') or return ();
+
+    my %memory;
+
+    while (my $line = <$fh>) {
+        if ($line =~ /^(MemTotal|MemAvailable|MemFree|Buffers|Cached):\s+(\d+)\s+kB$/) {
+            $memory{$1} = int($2) * 1024;
+        }
+    }
+
+    close($fh);
+
+    return (
+        $memory{'MemTotal'},
+        $memory{'MemAvailable'},
+        $memory{'MemFree'},
+        $memory{'Buffers'},
+        $memory{'Cached'},
+    );
+}
+
+sub uptime_data {
+    open(my $fh, '<', '/proc/uptime') or return undef;
+
+    my $line = <$fh>;
+
+    close($fh);
+
+    return undef unless defined $line;
+
+    my ($uptime) = split(/\s+/, $line);
+
+    return undef unless defined $uptime;
+    return undef unless $uptime =~ /^\d+(?:\.\d+)?$/;
+
+    return int($uptime);
+}
+
+sub disk_data {
+    open(my $fh, '-|', 'df', '-B1', '/') or return ();
+
+    my $header = <$fh>;
+    my $line = <$fh>;
+
+    close($fh);
+
+    return () unless defined $line;
+
+    $line =~ s/^\s+|\s+$//g;
+
+    my @fields = split(/\s+/, $line);
+
+    return () unless @fields >= 6;
+    return () unless $fields[1] =~ /^\d+$/;
+    return () unless $fields[2] =~ /^\d+$/;
+    return () unless $fields[3] =~ /^\d+$/;
+    return () unless $fields[4] =~ /^(\d+)%$/;
+
+    my $total = int($fields[1]);
+    my $used = int($fields[2]);
+    my $available = int($fields[3]);
+    my $use_percent = int($1);
+
+    return (
+        $total,
+        $used,
+        $available,
+        $use_percent,
+    );
+}
+
+sub diskstats_data {
+    open(my $fh, '<', '/proc/diskstats') or return ();
+
+    while (my $line = <$fh>) {
+        $line =~ s/^\s+|\s+$//g;
+
+        my @fields = split(/\s+/, $line);
+
+        next unless @fields >= 14;
+        next unless $fields[2] eq 'sda';
+
+        foreach my $value (@fields[3 .. 13]) {
+            return () unless $value =~ /^\d+$/;
+        }
+
+        return (
+            int($fields[3]),   # reads completed
+            int($fields[5]),   # sectors read
+            int($fields[7]),   # writes completed
+            int($fields[9]),   # sectors written
+            int($fields[11]),  # I/Os currently in progress
+            int($fields[12]),  # time spent doing I/Os
+        );
+    }
+
+    close($fh);
+
+    return ();
+}
+
+sub smart_data {
+    my $cache_file = '/tmp/fire-api.cache';
+    my $cache_age  = 60 * 60;    # 60 Minuten
+
+    # Cache verwenden, wenn vorhanden, nicht leer und noch aktuell
+    if (-f $cache_file && -s $cache_file) {
+        my $mtime = (stat($cache_file))[9];
+
+        if (defined $mtime && (time - $mtime) < $cache_age) {
+            open(my $fh, '<', $cache_file) or return undef;
+
+            local $/;
+            my $data = <$fh>;
+
+            close($fh);
+
+            return $data
+                if defined $data && $data =~ /^\s*\{.*\}\s*$/s;
+        }
+    }
+
+    # SMART-Daten über den von IPFire vorgesehenen Wrapper ermitteln.
+    my $output = '';
+
+    if (open(my $fh, '-|', '/usr/local/bin/smartctrl', 'sda')) {
+        local $/;
+        $output = <$fh> // '';
+
+        close($fh);
+    }
+
+    # SMART-Ausgabe muss einen erfolgreichen Health-Test enthalten.
+    return undef
+        unless $output =~ /SMART overall-health self-assessment test result:\s*PASSED/i;
+
+    my $health = JSON::PP::true;
+
+    # SMART-Attribute aus der tabellarischen Ausgabe auswerten.
+    my (
+        $temperature,
+        $power_on_hours,
+        $power_cycles,
+        $uncorrectable_errors,
+        $remaining_lifetime,
+    );
+
+    foreach my $line (split(/\n/, $output)) {
+        $line =~ s/^\s+|\s+$//g;
+
+        my @fields = split(/\s+/, $line);
+
+        # SMART-Attributzeilen beginnen mit der Attribut-ID.
+        next unless @fields >= 10;
+        next unless $fields[0] =~ /^\d+$/;
+
+        my $id  = int($fields[0]);
+        my $raw = $fields[-1];
+
+        next unless $raw =~ /^\d+$/;
+
+        if ($id == 9) {
+            $power_on_hours = int($raw);
+        } elsif ($id == 12) {
+            $power_cycles = int($raw);
+        } elsif ($id == 160) {
+            $uncorrectable_errors = int($raw);
+        } elsif ($id == 169) {
+            $remaining_lifetime = int($raw);
+        } elsif ($id == 194) {
+            $temperature = int($raw);
+        }
+    }
+
+    # Nur vollständige SMART-Daten als gültiges Ergebnis akzeptieren.
+    return undef
+        unless defined $temperature
+            && defined $power_on_hours
+            && defined $power_cycles
+            && defined $uncorrectable_errors
+            && defined $remaining_lifetime;
+
+    # smartctrl liefert in der aktuellen Ausgabe keinen SMART-Error-Log.
+    # Daher bleibt errors zunächst 0.
+    my $errors = 0;
+
+    my $result = {
+        health               => $health,
+        temperature          => $temperature,
+        power_on_hours       => $power_on_hours,
+        power_cycles         => $power_cycles,
+        uncorrectable_errors => $uncorrectable_errors,
+        errors               => $errors,
+        remaining_lifetime   => $remaining_lifetime,
+    };
+
+    my $json = encode_json($result);
+
+    # Nur vollständige und erfolgreiche SMART-Daten cachen.
+    if (open(my $fh, '>', $cache_file)) {
+        print $fh $json;
+        close($fh);
+    }
+
+    return $json;
+}
+
 sub fireinfo_data {
     my $profile_file = '/var/ipfire/fireinfo/profile';
 
@@ -121,8 +359,6 @@ sub fireinfo_data {
 
         $system->{'model'} // '',
         $system->{'vendor'} // '',
-        int($system->{'memory'} // 0),
-        int($system->{'root_size'} // 0),
         $system->{'virtual'} ? 1 : 0,
 
         $network->{'blue'} ? 1 : 0,
@@ -232,6 +468,32 @@ sub addons_data {
 
 my ($version, $core_update, $package_updates) = system_data();
 my ($rx_bytes, $tx_bytes) = traffic_data();
+my ($cpu_total, $cpu_idle) = cpu_data();
+my $uptime = uptime_data();
+my $smart = smart_data();
+
+my ($memory_total,
+    $memory_available,
+    $memory_free,
+    $memory_buffers,
+    $memory_cached,
+) = memory_data();
+
+my (
+    $disk_total,
+    $disk_used,
+    $disk_available,
+    $disk_use_percent,
+) = disk_data();
+
+my (
+    $disk_reads,
+    $disk_sectors_read,
+    $disk_writes,
+    $disk_sectors_written,
+    $disk_io_in_progress,
+    $disk_io_time,
+) = diskstats_data();
 
 my (
     $architecture,
@@ -239,8 +501,6 @@ my (
     $cpu_count,
     $model,
     $vendor,
-    $memory,
-    $root_size,
     $virtual,
     $blue,
     $green,
@@ -430,11 +690,38 @@ push @json, '"system":{'
     . ',"cpu_count":' . $cpu_count
     . ',"model":' . json_string($model)
     . ',"vendor":' . json_string($vendor)
-    . ',"memory":' . $memory
-    . ',"root_size":' . $root_size
     . ',"virtual":' . ($virtual ? 'true' : 'false')
     . ',"core_update":' . ($core_update ? 'true' : 'false')
     . ',"package_updates":' . $package_updates
+    . ',"uptime":' . (defined $uptime ? $uptime : 'null')
+    . ',"cpu":{'
+    . '"total":' . (defined $cpu_total ? $cpu_total : 'null')
+    . ',"idle":' . (defined $cpu_idle ? $cpu_idle : 'null')
+    . '}'
+    . ',"memory":{'
+    . '"total":' . (defined $memory_total ? $memory_total : 'null')
+    . ',"available":' . (defined $memory_available ? $memory_available : 'null')
+    . ',"free":' . (defined $memory_free ? $memory_free : 'null')
+    . ',"buffers":' . (defined $memory_buffers ? $memory_buffers : 'null')
+    . ',"cached":' . (defined $memory_cached ? $memory_cached : 'null')
+    . '}'
+    . ',"disk":{'
+    . '"root":{'
+    . '"total":' . (defined $disk_total ? $disk_total : 'null')
+    . ',"used":' . (defined $disk_used ? $disk_used : 'null')
+    . ',"available":' . (defined $disk_available ? $disk_available : 'null')
+    . ',"use_percent":' . (defined $disk_use_percent ? $disk_use_percent : 'null')
+    . '}'
+    . ',"sda":{'
+    . '"reads":' . (defined $disk_reads ? $disk_reads : 'null')
+    . ',"sectors_read":' . (defined $disk_sectors_read ? $disk_sectors_read : 'null')
+    . ',"writes":' . (defined $disk_writes ? $disk_writes : 'null')
+    . ',"sectors_written":' . (defined $disk_sectors_written ? $disk_sectors_written : 'null')
+    . ',"io_in_progress":' . (defined $disk_io_in_progress ? $disk_io_in_progress : 'null')
+    . ',"io_time":' . (defined $disk_io_time ? $disk_io_time : 'null')
+    . '}'
+    . '}'
+    . ',"smart":' . (defined $smart ? $smart : 'null')
     . '}';
 
 push @json, '"network":{'
