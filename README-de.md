@@ -41,6 +41,14 @@ Diese Dokumentation ist auch in 🇬🇧 [englischer Sprache](README.md) verfüg
 
 ## Neues in dieser Version
 
+### v0.3.5
+
+* Die Entwicklung des IPFire-CGI `api.cgi` wird im eigenständigen Repository [IPFire-API](https://github.com/FMainz/IPFire-API) fortgeführt.
+
+### v0.3.4
+
+* Die HACS-ZIP-Veröffentlichung vorbereitet und die Anzeige der GitHub-Paketdownloads angepasst.
+
 ### v0.3.3
 
 * Systeminformationssensoren für IPFire-Version, Pakfire-Version, Kernel-Version, Architektur, CPU-Modell, CPU-Anzahl, Modell und Hersteller hinzugefügt.
@@ -91,7 +99,18 @@ HA-IPFire verwendet die von IPFire bereitgestellten kumulativen Trafficzähler, 
 
 ## IPFire API
 
-Das optionale Script `api.cgi` stellt zusätzliche Informationen und Steuerungsfunktionen bereit, die über `speed.cgi` nicht verfügbar sind.
+Das optionale CGI-Script `api.cgi` ergänzt `speed.cgi` um Systeminformationen und Steuerungsfunktionen. Es wird im eigenständigen Projekt [IPFire-API](https://github.com/FMainz/IPFire-API) weiterentwickelt.
+
+Zusätzlich zum Verbindungsstatus und den Steuerungsaktionen liefert die API unter anderem Informationen zu:
+
+* IPFire-, Pakfire- und Kernel-Version sowie Systemhersteller, -modell und Architektur
+* CPU-Modell und Anzahl der Kerne
+* Arbeitsspeicher und Festplattenbelegung einschließlich I/O-Statistiken und SMART-Status
+* Status der Netzwerkschnittstellen und IPFire-Dienste
+* installierten Add-ons und deren Status
+* verfügbaren Core- und Paket-Updates
+
+Eine vollständige Beschreibung der JSON-Felder findest du in der [IPFire-API-Dokumentation](https://github.com/FMainz/IPFire-API/blob/main/README-de.md#endpunkt).
 
 ### Verbindungssteuerung
 
@@ -106,161 +125,9 @@ Wenn **Verbinden** bei bereits bestehender Verbindung betätigt wird, wird die a
 
 Die Verbindungssteuerung verwendet die native IPFire-Verbindungssteuerung, die durch das Script `api.cgi` bereitgestellt wird.
 
-### Systemparameter
-
-Der Abschnitt `system` stellt folgende Informationen bereit:
-
-| Parameter | Beschreibung |
-| --- | --- |
-| `version` | IPFire-Version |
-| `pakfire_version` | Pakfire-Version |
-| `kernel_version` | Linux-Kernel-Version |
-| `architecture` | Systemarchitektur |
-| `cpu_model` | CPU-Modell |
-| `cpu_count` | Anzahl der CPU-Kerne |
-| `model` | Systemmodell |
-| `vendor` | Systemhersteller |
-| `virtual` | Gibt an, ob das System virtualisiert ist |
-| `core_update` | Gibt an, ob ein Core-Update verfügbar ist |
-| `package_updates` | Anzahl der verfügbaren Paket-Updates |
-| `uptime` | Betriebszeit des Systems in Sekunden |
-
-#### CPU
-
-| Parameter | Beschreibung |
-| --- | --- |
-| `total` | Kumulierte CPU-Gesamtzeit |
-| `idle` | Kumulierte CPU-Leerlaufzeit |
-
-#### Arbeitsspeicher
-
-| Parameter | Beschreibung |
-| --- | --- |
-| `total` | Gesamter physischer Arbeitsspeicher in Byte |
-| `available` | Verfügbarer Arbeitsspeicher in Byte |
-| `free` | Freier Arbeitsspeicher in Byte |
-| `buffers` | Für Puffer verwendeter Arbeitsspeicher in Byte |
-| `cached` | Für den Cache verwendeter Arbeitsspeicher in Byte |
-
-#### Festplatte
-
-Die Speicherplatzinformationen des Root-Dateisystems werden unter `disk.root` bereitgestellt.
-
-| Parameter | Beschreibung |
-| --- | --- |
-| `total` | Gesamter Speicherplatz in Byte |
-| `used` | Belegter Speicherplatz in Byte |
-| `available` | Verfügbarer Speicherplatz in Byte |
-| `use_percent` | Festplattenauslastung in Prozent |
-
-Die I/O-Statistiken für das Gerät `sda` werden unter `disk.sda` bereitgestellt.
-
-| Parameter | Beschreibung |
-| --- | --- |
-| `reads` | Anzahl abgeschlossener Lesevorgänge |
-| `sectors_read` | Anzahl gelesener Sektoren |
-| `writes` | Anzahl abgeschlossener Schreibvorgänge |
-| `sectors_written` | Anzahl geschriebener Sektoren |
-| `io_in_progress` | Anzahl der aktuell laufenden I/O-Vorgänge |
-| `io_time` | Für I/O-Vorgänge aufgewendete Zeit |
-
-#### SMART
-
-SMART-Informationen werden für die Systemfestplatte bereitgestellt.
-
-| Parameter | Beschreibung |
-| --- | --- |
-| `power_on_hours` | Betriebsstunden der Festplatte |
-| `remaining_lifetime` | Verbleibende Lebensdauer der Festplatte in Prozent |
-| `health` | SMART-Gesundheitsstatus |
-| `errors` | Anzahl der SMART-Fehler |
-| `uncorrectable_errors` | Anzahl nicht korrigierbarer Fehler |
-| `power_cycles` | Anzahl der Einschaltzyklen |
-| `temperature` | Festplattentemperatur |
-
-### Netzwerk
-
-Der Abschnitt `network` stellt den aktuellen Status der IPFire-Netzwerkschnittstellen bereit.
-
-| Parameter | Beschreibung |
-| --- | --- |
-| `blue` | Status der BLUE-Netzwerkschnittstelle |
-| `green` | Status der GREEN-Netzwerkschnittstelle |
-| `orange` | Status der ORANGE-Netzwerkschnittstelle |
-| `red` | Status der RED-Netzwerkschnittstelle |
-
-Die Werte sind boolesch:
-
-* `true` – die Schnittstelle ist aktiv
-* `false` – die Schnittstelle ist inaktiv
-
-### Dienste
-
-Der Abschnitt `services` stellt den aktuellen Status der von IPFire verwalteten Dienste bereit.
-
-| Parameter | Beschreibung |
-| --- | --- |
-| `dhcp` | Status des DHCP-Servers |
-| `web_server` | Status des IPFire-Webservers |
-| `cron` | Status des Cron-Dienstes |
-| `dns_resolver` | Status des DNS-Resolvers |
-| `logging` | Status des Logging-Dienstes |
-| `ntp` | Status des NTP-Dienstes |
-| `ssh` | Status des SSH-Dienstes |
-| `vpn` | Status des VPN-Dienstes |
-| `web_proxy` | Status des Web-Proxy-Dienstes |
-| `ips` | Status des Intrusion Prevention Systems (IPS) |
-| `ovpn_roadwarrior` | Status des OpenVPN-Roadwarrior-Dienstes |
-| `lldp` | Status des LLDP-Dienstes |
-| `dbus` | Status des D-Bus-Dienstes |
-
-Die Werte sind boolesch:
-
-* `true` – der Dienst läuft
-* `false` – der Dienst läuft nicht
-
-### Add-ons
-
-Der Abschnitt `addons` stellt den aktuellen Status unterstützter IPFire-Add-ons bereit.
-
-Das folgende Beispiel zeigt, wie der Status eines Add-ons dargestellt wird:
-
-| Parameter | Beschreibung |
-| --- | --- |
-| `transmission.running` | Gibt an, ob das Transmission-Add-on läuft |
-
-Der Wert ist boolesch:
-
-* `true` – das Add-on läuft
-* `false` – das Add-on läuft nicht
-
-Transmission dient hier nur als Beispiel. Der Abschnitt `addons` kann auch Statusinformationen zu anderen unterstützten Add-ons bereitstellen.
-
-### Updates
-
-Der Abschnitt `system` stellt Informationen über verfügbare IPFire-Updates bereit.
-
-| Parameter | Beschreibung |
-| --- | --- |
-| `core_update` | Gibt an, ob ein IPFire-Core-Update verfügbar ist |
-| `package_updates` | Anzahl der verfügbaren Paket-Updates |
-
-Der Wert `core_update` ist boolesch:
-
-* `true` – ein Core-Update ist verfügbar
-* `false` – kein Core-Update ist verfügbar
-
-`package_updates` enthält die Anzahl der verfügbaren Paket-Updates.
-
 ### Installation des IPFire-CGI
 
-Das CGI-Script ist in diesem Repository enthalten:
-
-```text
-ipfire/api.cgi
-```
-
-Das CGI muss manuell auf der IPFire-Firewall installiert werden. HACS installiert nur die Home-Assistant-Integration und kann keine Dateien auf das separate IPFire-System kopieren.
+Die aktuelle Version von `api.cgi` und die ausführliche Dokumentation findest du im [eigenständigen IPFire-API-Projekt](https://github.com/FMainz/IPFire-API). Installiere das CGI-Script manuell auf der IPFire-Firewall. HACS installiert die Home-Assistant-Integration; die Datei `api.cgi` muss zusätzlich auf IPFire eingerichtet werden.
 
 Kopiere das CGI nach:
 

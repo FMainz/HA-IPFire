@@ -41,6 +41,14 @@ This documentation is also available in 🇩🇪 [German](README-de.md).
 
 ## What’s New in This Version
 
+### v0.3.5
+
+* Development of the IPFire CGI `api.cgi` continues in the standalone [IPFire-API](https://github.com/FMainz/IPFire-API) repository.
+
+### v0.3.4
+
+* Fixed and enabled the download counter.
+
 ### v0.3.3
 
 * Added system information sensors for IPFire version, Pakfire version, kernel version, architecture, CPU model, CPU count, model and vendor.
@@ -91,7 +99,20 @@ HA-IPFire uses the cumulative traffic counters provided by IPFire to calculate t
 
 ## IPFire API
 
-The optional `api.cgi` script provides additional information and control functions that are not available through `speed.cgi`.
+The optional `api.cgi` script extends `speed.cgi` with system information and connection control. It is developed separately in the [IPFire-API project](https://github.com/FMainz/IPFire-API).
+
+### Additional information
+
+In addition to connection status and controls, the API provides information such as:
+
+* IPFire, Pakfire, and kernel versions, plus system vendor, model, and architecture
+* CPU model and number of cores
+* Memory and disk usage, including I/O statistics and SMART status
+* Network interface and IPFire service states
+* Installed add-ons and their status
+* Available core and package updates
+
+For a complete description of the JSON fields, see the [IPFire-API documentation](https://github.com/FMainz/IPFire-API/blob/main/README.md#endpoint).
 
 ### Connection control
 
@@ -106,161 +127,9 @@ If **Connect** is pressed while a connection is already active, the current conn
 
 The connection control uses the native IPFire connection handling provided by the `api.cgi` script.
 
-### System parameters
-
-The `system` section provides the following information:
-
-| Parameter | Description |
-| --- | --- |
-| `version` | IPFire version |
-| `pakfire_version` | Pakfire version |
-| `kernel_version` | Linux kernel version |
-| `architecture` | System architecture |
-| `cpu_model` | CPU model |
-| `cpu_count` | Number of CPU cores |
-| `model` | System model |
-| `vendor` | System vendor |
-| `virtual` | Indicates whether the system is virtualized |
-| `core_update` | Indicates whether a core update is available |
-| `package_updates` | Number of available package updates |
-| `uptime` | System uptime in seconds |
-
-#### CPU
-
-| Parameter | Description |
-| --- | --- |
-| `total` | Total accumulated CPU time |
-| `idle` | Accumulated CPU idle time |
-
-#### Memory
-
-| Parameter | Description |
-| --- | --- |
-| `total` | Total physical memory in bytes |
-| `available` | Available memory in bytes |
-| `free` | Free memory in bytes |
-| `buffers` | Memory used for buffers in bytes |
-| `cached` | Memory used for cache in bytes |
-
-#### Disk
-
-Disk space information for the root filesystem is provided under `disk.root`.
-
-| Parameter | Description |
-| --- | --- |
-| `total` | Total disk space in bytes |
-| `used` | Used disk space in bytes |
-| `available` | Available disk space in bytes |
-| `use_percent` | Disk usage in percent |
-
-Disk I/O statistics for the `sda` device are provided under `disk.sda`.
-
-| Parameter | Description |
-| --- | --- |
-| `reads` | Number of completed read operations |
-| `sectors_read` | Number of sectors read |
-| `writes` | Number of completed write operations |
-| `sectors_written` | Number of sectors written |
-| `io_in_progress` | Number of I/O operations currently in progress |
-| `io_time` | Time spent performing I/O operations |
-
-#### SMART
-
-SMART information is provided for the system disk.
-
-| Parameter | Description |
-| --- | --- |
-| `power_on_hours` | Disk power-on hours |
-| `remaining_lifetime` | Remaining disk lifetime in percent |
-| `health` | SMART health status |
-| `errors` | SMART error count |
-| `uncorrectable_errors` | Number of uncorrectable errors |
-| `power_cycles` | Number of power cycles |
-| `temperature` | Disk temperature |
-
-### Network
-
-The `network` section provides the current state of the IPFire network interfaces.
-
-| Parameter | Description |
-| --- | --- |
-| `blue` | State of the BLUE network interface |
-| `green` | State of the GREEN network interface |
-| `orange` | State of the ORANGE network interface |
-| `red` | State of the RED network interface |
-
-The values are boolean:
-
-* `true` – the interface is active
-* `false` – the interface is inactive
-
-### Services
-
-The `services` section provides the current status of the services managed by IPFire.
-
-| Parameter | Description |
-| --- | --- |
-| `dhcp` | DHCP server status |
-| `web_server` | IPFire web server status |
-| `cron` | Cron service status |
-| `dns_resolver` | DNS resolver status |
-| `logging` | Logging service status |
-| `ntp` | NTP service status |
-| `ssh` | SSH service status |
-| `vpn` | VPN service status |
-| `web_proxy` | Web proxy status |
-| `ips` | Intrusion Prevention System (IPS) status |
-| `ovpn_roadwarrior` | OpenVPN Roadwarrior status |
-| `lldp` | LLDP service status |
-| `dbus` | D-Bus service status |
-
-The values are boolean:
-
-* `true` – the service is running
-* `false` – the service is not running
-
-### Add-ons
-
-The `addons` section provides the current status of supported IPFire add-ons.
-
-The following example shows how an add-on status is represented:
-
-| Parameter | Description |
-| --- | --- |
-| `transmission.running` | Indicates whether the Transmission add-on is running |
-
-The value is boolean:
-
-* `true` – the add-on is running
-* `false` – the add-on is not running
-
-Transmission is used here as an example. The `addons` section can provide status information for other supported add-ons as well.
-
-### Updates
-
-The `system` section provides information about available IPFire updates.
-
-| Parameter | Description |
-| --- | --- |
-| `core_update` | Indicates whether an IPFire core update is available |
-| `package_updates` | Number of available package updates |
-
-The `core_update` value is boolean:
-
-* `true` – a core update is available
-* `false` – no core update is available
-
-`package_updates` contains the number of available package updates.
-
 ### IPFire CGI installation
 
-The CGI script is included in this repository at:
-
-```text
-ipfire/api.cgi
-```
-
-The CGI must be installed manually on the IPFire firewall. HACS installs only the Home Assistant integration and cannot copy files to the separate IPFire system.
+The CGI is maintained in the standalone [IPFire-API project](https://github.com/FMainz/IPFire-API). Follow its [installation instructions](https://github.com/FMainz/IPFire-API/blob/main/README.md#installation) to set it up on your IPFire firewall. HACS installs only the Home Assistant integration and cannot copy files to the separate IPFire system.
 
 Copy the CGI to:
 
