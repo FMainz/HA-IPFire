@@ -66,16 +66,37 @@
   "entity": {
     "sensor": {
       "download": {
-        "name": "Download"
+        "name": "Rot empfangen"
       },
       "upload": {
-        "name": "Upload"
+        "name": "Rot gesendet"
       },
       "download_rate": {
         "name": "Download-Geschwindigkeit"
       },
       "upload_rate": {
         "name": "Upload-Geschwindigkeit"
+      },
+      "dhcp_active_leases": {
+        "name": "Aktive DHCP-Leases"
+      },
+      "green_rx_bytes": {
+        "name": "Grün empfangen"
+      },
+      "green_tx_bytes": {
+        "name": "Grün gesendet"
+      },
+      "orange_rx_bytes": {
+        "name": "Orange empfangen"
+      },
+      "orange_tx_bytes": {
+        "name": "Orange gesendet"
+      },
+      "blue_rx_bytes": {
+        "name": "Blau empfangen"
+      },
+      "blue_tx_bytes": {
+        "name": "Blau gesendet"
       },
       "connection_duration": {
         "name": "Verbindungsdauer"
@@ -163,8 +184,8 @@
       "smart_errors": {
         "name": "SMART-Fehler"
       },
-      "package_updates": {
-        "name": "Paket-Updates"
+      "updates_available": {
+        "name": "Updates verfügbar"
       },
       "external_ip": {
         "name": "Externe IP-Adresse"
@@ -177,8 +198,12 @@
       "virtual": {
         "name": "Virtuell"
       },
-      "core_update": {
-        "name": "Core-Update verfügbar"
+      "reboot_required": {
+        "name": "Neustart erforderlich",
+        "state": {
+          "on": "Ja",
+          "off": "Nein"
+        }
       },
       "network_blue": {
         "name": "Blau (WLAN)"

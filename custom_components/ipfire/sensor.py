@@ -322,10 +322,9 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
     ),
     IPFireSensorDescription(
         key="package_updates",
-        translation_key="package_updates",
-        value_key="package_updates",
+        translation_key="updates_available",
+        value_key="updates_available",
         data_group="system",
-        entity_registry_enabled_default=False,
     ),
 )
 
@@ -339,14 +338,30 @@ async def async_setup_entry(
 
     coordinator: IPFireCoordinator = entry.runtime_data.coordinator
 
-    async_add_entities(
+    entities: list[SensorEntity] = [
         IPFireTrafficSensor(
             coordinator,
             entry,
             description,
         )
         for description in SENSORS
-    )
+    ]
+
+    entities.append(IPFireDHCPLeasesSensor(coordinator, entry))
+
+    # The overall Download/Upload sensors represent the RED (WAN) interface.
+    # Add separate byte counters for the internal GREEN, ORANGE, and BLUE zones.
+    if coordinator.data is not None:
+        for zone in ("green", "orange", "blue"):
+            interface = coordinator.data.network.interfaces.get(zone)
+            if interface is None or interface.device is None:
+                continue
+            entities.extend(
+                IPFireInterfaceTrafficSensor(coordinator, entry, zone, direction)
+                for direction in ("rx", "tx")
+            )
+
+    async_add_entities(entities)
 
 
 class IPFireTrafficSensor(
@@ -396,3 +411,98 @@ class IPFireTrafficSensor(
             return dt_util.utc_from_timestamp(value)
 
         return value
+
+
+class IPFireDHCPLeasesSensor(
+    CoordinatorEntity[IPFireCoordinator],
+    SensorEntity,
+):
+    """Report the number of active DHCP leases and expose the lease list."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "dhcp_active_leases"
+    _attr_entity_registry_enabled_default = True
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(
+        self,
+        coordinator: IPFireCoordinator,
+        entry: ConfigEntry,
+    ) -> None:
+        """Initialize the DHCP lease sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_dhcp_active_leases"
+        self._attr_device_info = DeviceInfo(
+            identifiers={("ipfire", entry.entry_id)},
+            name="IPFire",
+            manufacturer="IPFire",
+            model="Firewall",
+        )
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the number of active leases."""
+        if self.coordinator.data is None:
+            return None
+        leases = self.coordinator.data.dhcp_leases
+        if leases is None:
+            return None
+        return sum(lease.get("status") == "active" for lease in leases)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, list[dict[str, object]]] | None:
+        """Expose the lease records as sensor attributes."""
+        if self.coordinator.data is None:
+            return None
+        leases = self.coordinator.data.dhcp_leases
+        if leases is None:
+            return None
+        return {"leases": [dict(lease) for lease in leases]}
+
+
+class IPFireInterfaceTrafficSensor(
+    CoordinatorEntity[IPFireCoordinator],
+    SensorEntity,
+):
+    """Report received or sent bytes for an internal IPFire interface."""
+
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: IPFireCoordinator,
+        entry: ConfigEntry,
+        zone: str,
+        direction: str,
+    ) -> None:
+        """Initialize an internal interface traffic sensor."""
+        super().__init__(coordinator)
+        self._zone = zone
+        self._direction = direction
+        key = f"{zone}_{direction}_bytes"
+        self.entity_description = SensorEntityDescription(
+            key=key,
+            translation_key=key,
+            device_class=SensorDeviceClass.DATA_SIZE,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            native_unit_of_measurement=UnitOfInformation.BYTES,
+            suggested_unit_of_measurement=UnitOfInformation.MEGABYTES,
+            suggested_display_precision=1,
+        )
+        self._attr_unique_id = f"{entry.entry_id}_{key}"
+        self._attr_device_info = DeviceInfo(
+            identifiers={("ipfire", entry.entry_id)},
+            name="IPFire",
+            manufacturer="IPFire",
+            model="Firewall",
+        )
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the current byte counter for the interface."""
+        if self.coordinator.data is None:
+            return None
+        interface = self.coordinator.data.network.interfaces.get(self._zone)
+        if interface is None:
+            return None
+        return getattr(interface, f"{self._direction}_bytes")

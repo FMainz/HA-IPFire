@@ -32,8 +32,9 @@ class IPFireSystemData:
     model: str
     vendor: str
     virtual: bool
-    core_update: bool
-    package_updates: int
+    core_update: bool | None
+    reboot_required: bool | None
+    package_updates: int | None
     uptime: int | None
     cpu_total: int | None
     cpu_idle: int | None
@@ -50,6 +51,18 @@ class IPFireSystemData:
     smart_temperature: int | None
     smart_errors: int | None
 
+    @property
+    def updates_available(self) -> int | None:
+        """Return the total number of available core and package updates."""
+        if (
+            not isinstance(self.core_update, bool)
+            or not isinstance(self.package_updates, int)
+            or isinstance(self.package_updates, bool)
+        ):
+            return None
+
+        return self.package_updates + int(self.core_update)
+
 
 @dataclass(frozen=True, slots=True)
 class IPFireNetworkData:
@@ -59,6 +72,16 @@ class IPFireNetworkData:
     green: bool | None
     orange: bool | None
     red: bool | None
+    interfaces: dict[str, IPFireInterfaceData | None]
+
+
+@dataclass(frozen=True, slots=True)
+class IPFireInterfaceData:
+    """Represent byte counters for one IPFire network interface."""
+
+    device: str | None
+    rx_bytes: int | None
+    tx_bytes: int | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,6 +101,7 @@ class IPFireData:
     external_hostname: str
     system: IPFireSystemData
     network: IPFireNetworkData
+    dhcp_leases: tuple[dict[str, object], ...] | None
     services: dict[str, bool]
     addons: dict[str, dict[str, bool]]
 
@@ -181,6 +205,7 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
             traffic = payload["traffic"]
             system = payload.get("system", {})
             network = payload.get("network", {})
+            dhcp = payload.get("dhcp", {})
             services = payload.get("services", {})
             addons = payload.get("addons", {})
             if not isinstance(connection, dict):
@@ -195,11 +220,54 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
             if not isinstance(network, dict):
                 raise ValueError("Invalid network data from IPFire")
 
+            if not isinstance(dhcp, dict):
+                raise ValueError("Invalid DHCP data from IPFire")
+
             if not isinstance(services, dict):
                 raise ValueError("Invalid services data from IPFire")
 
             if not isinstance(addons, dict):
                 raise ValueError("Invalid addons data from IPFire")
+
+            raw_interfaces = network.get("interfaces", {})
+            if not isinstance(raw_interfaces, dict):
+                raise ValueError("Invalid network interface data from IPFire")
+
+            interfaces: dict[str, IPFireInterfaceData | None] = {}
+            for zone in ("red", "green", "orange", "blue"):
+                raw_interface = raw_interfaces.get(zone)
+                if raw_interface is None:
+                    interfaces[zone] = None
+                    continue
+                if not isinstance(raw_interface, dict):
+                    raise ValueError(
+                        f"Invalid {zone.upper()} interface data from IPFire"
+                    )
+                interfaces[zone] = IPFireInterfaceData(
+                    device=(
+                        str(raw_interface["device"])
+                        if raw_interface.get("device") is not None
+                        else None
+                    ),
+                    rx_bytes=self._parse_optional_int(
+                        raw_interface.get("rx_bytes")
+                    ),
+                    tx_bytes=self._parse_optional_int(
+                        raw_interface.get("tx_bytes")
+                    ),
+                )
+
+            raw_leases = dhcp.get("leases")
+            if raw_leases is not None and not isinstance(raw_leases, list):
+                raise ValueError("Invalid DHCP lease data from IPFire")
+            if isinstance(raw_leases, list) and not all(
+                isinstance(lease, dict) for lease in raw_leases
+            ):
+                raise ValueError("Invalid DHCP lease entry from IPFire")
+            dhcp_leases = (
+                tuple(raw_leases) if isinstance(raw_leases, list) else None
+            )
+
             connection_state = str(connection.get("state", "unavailable"))
 
             if "rx_bytes" not in traffic:
@@ -268,8 +336,15 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
                 model=system.get("model"),
                 vendor=system.get("vendor"),
                 virtual=system.get("virtual"),
-                core_update=system.get("core_update"),
-                package_updates=system.get("package_updates"),
+                core_update=(
+                    system.get("core_update")
+                    if isinstance(system.get("core_update"), bool)
+                    else None
+                ),
+                reboot_required=system.get("reboot_required"),
+                package_updates=self._parse_optional_int(
+                    system.get("package_updates")
+                ),
                 uptime=system.get("uptime"),
                 cpu_total=cpu_total,
                 cpu_idle=cpu_idle,
@@ -291,6 +366,7 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
                 green=network.get("green"),
                 orange=network.get("orange"),
                 red=network.get("red"),
+                interfaces=interfaces,
             )
 
         except (KeyError, TypeError, ValueError) as err:
@@ -338,6 +414,7 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
             external_hostname=external_hostname,
             system=system_data,
             network=network_data,
+            dhcp_leases=dhcp_leases,
             services=services,
             addons=addons,
         )
@@ -419,6 +496,7 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
             },
             "system": {},
             "network": {},
+            "dhcp": {},
             "services": {},
             "addons": {},
         }

@@ -41,6 +41,12 @@ This documentation is also available in 🇩🇪 [German](README-de.md).
 
 ## What’s New in This Version
 
+### v0.3.6
+
+* Added DHCP lease count and client details as sensor attributes (requires `api.cgi`).
+* Added cumulative traffic counters for the GREEN, ORANGE, and BLUE interfaces (requires `api.cgi`).
+* Added a reboot-required sensor and a combined count of available core and package updates (requires `api.cgi`).
+
 ### v0.3.5
 
 * Development of the IPFire CGI `api.cgi` continues in the standalone [IPFire-API](https://github.com/FMainz/IPFire-API) repository.
@@ -65,19 +71,24 @@ This documentation is also available in 🇩🇪 [German](README-de.md).
 
 HA-IPFire provides the following features:
 
-* Download traffic counter
-* Upload traffic counter
+* RED download traffic counter
+* RED upload traffic counter
 * Current download speed
 * Current upload speed
-* Internet connection state
-* Internet connection duration
-* Connect and Disconnect controls
-* Configurable polling interval
+* Internet connection state¹
+* Internet connection duration¹
+* Connect and Disconnect controls¹
+* Configurable polling interval¹
 * Polling interval from 5 to 60 seconds
 * Optional SSL certificate verification
 * Username/password authentication
 * HACS compatible
 * German and English translations
+* DHCP lease sensor with client details¹
+* Traffic counters for individual network zones¹
+* Reboot-required status and total available update count¹
+
+¹Requires `api.cgi` from [IPFire-API](https://github.com/FMainz/IPFire-API).
 
 ## IPFire
 
@@ -108,9 +119,10 @@ In addition to connection status and controls, the API provides information such
 * IPFire, Pakfire, and kernel versions, plus system vendor, model, and architecture
 * CPU model and number of cores
 * Memory and disk usage, including I/O statistics and SMART status
-* Network interface and IPFire service states
+* Network interface states and per-zone traffic counters, plus IPFire service states
+* Active DHCP leases and their client details
 * Installed add-ons and their status
-* Available core and package updates
+* Core and package update status, plus whether a reboot is required
 
 For a complete description of the JSON fields, see the [IPFire-API documentation](https://github.com/FMainz/IPFire-API/blob/main/README.md#endpoint).
 
@@ -154,12 +166,29 @@ The integration provides the following sensors:
 
 ### Traffic
 
-* **Download** – cumulative download traffic in bytes.
-* **Upload** – cumulative upload traffic in bytes.
+* **Red Traffic Received** – cumulative received bytes on the RED interface.
+* **Red Traffic Sent** – cumulative sent bytes on the RED interface.
 * **Download Speed** – current download speed.
 * **Upload Speed** – current upload speed.
 
-The following sensors and functions require `api.cgi` to be [installed](#ipfire-cgi-installation) on the IPFire firewall.
+The following additional sensors and functions require `api.cgi` to be [installed](#ipfire-cgi-installation) on the IPFire firewall.
+
+### Internal network traffic
+
+* **Green Traffic Received/Sent** – cumulative received and sent bytes on the GREEN interface.
+* **Orange Traffic Received/Sent** – cumulative received and sent bytes on the ORANGE interface.
+* **Blue Traffic Received/Sent** – cumulative received and sent bytes on the BLUE interface.
+
+Sensors are created only for internal interfaces configured on the IPFire firewall.
+
+### DHCP leases
+
+* **Active DHCP Leases** – number of active DHCP leases. The `leases` attribute contains the client records reported by IPFire, including IP address, MAC address, hostname, expiry, and status. To view them, open the sensor's more-info panel in Home Assistant and inspect its attributes.
+
+### System status
+
+* **Reboot Required** – indicates when IPFire requires a reboot after an update. Requires a current version of `api.cgi`; older versions leave the sensor unknown.
+* **Updates Available** – total number of available updates, including core and package updates.
 
 ### Internet connection
 
@@ -180,7 +209,6 @@ The following sensors and functions require `api.cgi` to be [installed](#ipfire-
 * **Model**
 * **Vendor**
 * **Uptime**
-* **Package Updates**
 
 ### CPU
 
