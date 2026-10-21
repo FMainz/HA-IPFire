@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
@@ -36,11 +37,11 @@ BINARY_SENSORS: tuple[IPFireBinarySensorDescription, ...] = (
         entity_registry_enabled_default=False,
     ),
     IPFireBinarySensorDescription(
-        key="core_update",
-        translation_key="core_update",
-        value_key="core_update",
+        key="reboot_required",
+        translation_key="reboot_required",
+        value_key="reboot_required",
         data_group="system",
-        entity_registry_enabled_default=False,
+        device_class=BinarySensorDeviceClass.PROBLEM,
     ),
     IPFireBinarySensorDescription(
         key="network_blue",

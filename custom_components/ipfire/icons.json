@@ -13,6 +13,27 @@
       "upload_rate": {
         "default": "mdi:upload-network"
       },
+      "dhcp_active_leases": {
+        "default": "mdi:lan"
+      },
+      "green_rx_bytes": {
+        "default": "mdi:download-network"
+      },
+      "green_tx_bytes": {
+        "default": "mdi:upload-network"
+      },
+      "orange_rx_bytes": {
+        "default": "mdi:download-network"
+      },
+      "orange_tx_bytes": {
+        "default": "mdi:upload-network"
+      },
+      "blue_rx_bytes": {
+        "default": "mdi:download-network"
+      },
+      "blue_tx_bytes": {
+        "default": "mdi:upload-network"
+      },
       "connection_duration": {
         "default": "mdi:timer-outline"
       },
@@ -100,11 +121,14 @@
       "smart_errors": {
         "default": "mdi:alert-circle"
       },
-      "package_updates": {
+      "updates_available": {
         "default": "mdi:package-up"
       }
     },
     "binary_sensor": {
+      "reboot_required": {
+        "default": "mdi:restart-alert"
+      },
       "service_dhcp": {
         "default": "mdi:ip-network"
       },

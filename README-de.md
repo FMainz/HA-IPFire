@@ -41,6 +41,12 @@ Diese Dokumentation ist auch in 🇬🇧 [englischer Sprache](README.md) verfüg
 
 ## Neues in dieser Version
 
+### v0.3.6
+
+* DHCP-Lease-Anzahl und Clientdaten als Sensorattribute hinzugefügt (benötigt api.cgi).
+* Kumulative Trafficzähler für die GREEN-, ORANGE- und BLUE-Schnittstellen hinzugefügt (benötigt api.cgi).
+* Sensor für erforderlichen Neustart sowie Gesamtzahl verfügbarer Core- und Paket-Updates hinzugefügt (benötigt api.cgi).
+
 ### v0.3.5
 
 * Die Entwicklung des IPFire-CGI `api.cgi` wird im eigenständigen Repository [IPFire-API](https://github.com/FMainz/IPFire-API) fortgeführt.
@@ -65,19 +71,24 @@ Diese Dokumentation ist auch in 🇬🇧 [englischer Sprache](README.md) verfüg
 
 HA-IPFire bietet folgende Funktionen:
 
-* Download-Trafficzähler
-* Upload-Trafficzähler
+* RED-Download-Trafficzähler
+* RED-Upload-Trafficzähler
 * Aktuelle Download-Geschwindigkeit
 * Aktuelle Upload-Geschwindigkeit
-* Status der Internetverbindung
-* Dauer der Internetverbindung
-* Connect- und Disconnect-Steuerung
-* Konfigurierbares Abfrageintervall
+* Status der Internetverbindung¹
+* Dauer der Internetverbindung¹
+* Connect- und Disconnect-Steuerung¹
+* Konfigurierbares Abfrageintervall¹
 * Abfrageintervall von 5 bis 60 Sekunden
 * Optionale SSL-Zertifikatsprüfung
 * Authentifizierung mit Benutzername und Passwort
 * HACS-kompatibel
 * Deutsche und englische Übersetzungen
+* DHCP-Lease-Sensor mit Clientdaten¹
+* Trafficzähler für einzelne Netzwerkzonen¹
+* Neustartstatus und Gesamtzahl verfügbarer Updates¹
+
+¹Benötigt api.cgi aus [IPFire-API](https://github.com/FMainz/IPFire-API)
 
 ## IPFire
 
@@ -106,11 +117,12 @@ Zusätzlich zum Verbindungsstatus und den Steuerungsaktionen liefert die API unt
 * IPFire-, Pakfire- und Kernel-Version sowie Systemhersteller, -modell und Architektur
 * CPU-Modell und Anzahl der Kerne
 * Arbeitsspeicher und Festplattenbelegung einschließlich I/O-Statistiken und SMART-Status
-* Status der Netzwerkschnittstellen und IPFire-Dienste
+* Status der Netzwerkschnittstellen, Trafficzähler pro Zone und IPFire-Dienste
+* Aktive DHCP-Leases mit Clientdaten
 * installierten Add-ons und deren Status
-* verfügbaren Core- und Paket-Updates
+* Core- und Paket-Updates sowie erforderlicher Neustart
 
-Eine vollständige Beschreibung der JSON-Felder findest du in der [IPFire-API-Dokumentation](https://github.com/FMainz/IPFire-API/blob/main/README-de.md#endpunkt).
+Eine vollständige Beschreibung der JSON-Felder findest du in der [IPFire-API-Dokumentation](https://github.com/FMainz/IPFire-API/blob/main/README-de.md#api-zugriff).
 
 ### Verbindungssteuerung
 
@@ -152,12 +164,29 @@ Die Integration stellt folgende Sensoren bereit:
 
 ### Traffic
 
-* **Download** – kumulativer Download-Traffic in Byte.
-* **Upload** – kumulativer Upload-Traffic in Byte.
+* **Rot empfangen** – kumulativ empfangene Bytes auf der RED-Schnittstelle.
+* **Rot gesendet** – kumulativ gesendete Bytes auf der RED-Schnittstelle.
 * **Download Speed** – aktuelle Download-Geschwindigkeit.
 * **Upload Speed** – aktuelle Upload-Geschwindigkeit.
 
-Die folgenden Sensoren und Funktionen erfordern, dass `api.cgi` auf der IPFire-Firewall [installiert](#installation-des-ipfire-cgi) ist.
+Die folgenden zusätzlichen Sensoren und Funktionen erfordern, dass `api.cgi` auf der IPFire-Firewall [installiert](#installation-des-ipfire-cgi) ist.
+
+### Traffic interner Netzwerkschnittstellen
+
+* **Grün empfangen/gesendet** – kumulativ empfangene und gesendete Bytes auf der GREEN-Schnittstelle.
+* **Orange empfangen/gesendet** – kumulativ empfangene und gesendete Bytes auf der ORANGE-Schnittstelle.
+* **Blau empfangen/gesendet** – kumulativ empfangene und gesendete Bytes auf der BLUE-Schnittstelle.
+
+Sensoren werden nur für interne Schnittstellen angelegt, die auf der IPFire-Firewall konfiguriert sind.
+
+### DHCP-Leases
+
+* **Aktive DHCP-Leases** – Anzahl aktiver DHCP-Leases. Das Attribut `leases` enthält die von IPFire gemeldeten Clientdaten mit IP-Adresse, MAC-Adresse, Hostname, Ablaufzeit und Status. Du findest sie in Home Assistant in der Detailansicht des Sensors unter den Attributen.
+
+### Systemstatus
+
+* **Neustart erforderlich** – zeigt an, wenn IPFire nach einem Update einen Neustart verlangt. Benötigt eine aktuelle Version von `api.cgi`; bei älteren Versionen bleibt der Sensor unbekannt.
+* **Updates verfügbar** – Gesamtzahl der verfügbaren Updates, einschließlich Core- und Paket-Updates.
 
 ### Internetverbindung
 
@@ -178,7 +207,6 @@ Die folgenden Sensoren und Funktionen erfordern, dass `api.cgi` auf der IPFire-F
 * **Model**
 * **Vendor**
 * **Uptime**
-* **Package Updates**
 
 ### CPU
 

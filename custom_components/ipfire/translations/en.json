@@ -66,16 +66,37 @@
   "entity": {
     "sensor": {
       "download": {
-        "name": "Download"
+        "name": "Red Traffic Received"
       },
       "upload": {
-        "name": "Upload"
+        "name": "Red Traffic Sent"
       },
       "download_rate": {
         "name": "Download Speed"
       },
       "upload_rate": {
         "name": "Upload Speed"
+      },
+      "dhcp_active_leases": {
+        "name": "Active DHCP Leases"
+      },
+      "green_rx_bytes": {
+        "name": "Green Traffic Received"
+      },
+      "green_tx_bytes": {
+        "name": "Green Traffic Sent"
+      },
+      "orange_rx_bytes": {
+        "name": "Orange Traffic Received"
+      },
+      "orange_tx_bytes": {
+        "name": "Orange Traffic Sent"
+      },
+      "blue_rx_bytes": {
+        "name": "Blue Traffic Received"
+      },
+      "blue_tx_bytes": {
+        "name": "Blue Traffic Sent"
       },
       "connection_duration": {
         "name": "Connection Duration"
@@ -163,8 +184,8 @@
       "smart_errors": {
         "name": "SMART Errors"
       },
-      "package_updates": {
-        "name": "Package Updates"
+      "updates_available": {
+        "name": "Updates Available"
       },
       "external_ip": {
         "name": "External IP Address"
@@ -177,8 +198,12 @@
       "virtual": {
         "name": "Virtual"
       },
-      "core_update": {
-        "name": "Core Update Available"
+      "reboot_required": {
+        "name": "Reboot Required",
+        "state": {
+          "on": "Yes",
+          "off": "No"
+        }
       },
       "network_blue": {
         "name": "Blue (WiFi)"
