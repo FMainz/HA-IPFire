@@ -187,6 +187,17 @@
       "updates_available": {
         "name": "Updates Available"
       },
+      "update_operation": {
+        "name": "Update Operation",
+        "state": {
+          "idle": "Idle",
+          "starting": "Starting",
+          "running": "Running",
+          "completed": "Completed",
+          "failed": "Failed",
+          "unknown": "Unknown"
+        }
+      },
       "external_ip": {
         "name": "External IP Address"
       },
@@ -255,6 +266,11 @@
       },
       "service_dbus": {
         "name": "D-Bus Daemon"
+      }
+    },
+    "update": {
+      "system_updates": {
+        "name": "IPFire System Updates"
       }
     },
     "button": {

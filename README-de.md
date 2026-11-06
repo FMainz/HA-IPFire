@@ -87,6 +87,7 @@ HA-IPFire bietet folgende Funktionen:
 * DHCP-Lease-Sensor mit Clientdaten¹
 * Trafficzähler für einzelne Netzwerkzonen¹
 * Neustartstatus und Gesamtzahl verfügbarer Updates¹
+* Verfügbare IPFire-Updates anzeigen und das vollständige Pakfire-Upgrade in Home Assistant installieren¹
 
 ¹Benötigt api.cgi aus [IPFire-API](https://github.com/FMainz/IPFire-API)
 
@@ -181,12 +182,14 @@ Sensoren werden nur für interne Schnittstellen angelegt, die auf der IPFire-Fir
 
 ### DHCP-Leases
 
-* **Aktive DHCP-Leases** – Anzahl aktiver DHCP-Leases. Das Attribut `leases` enthält die von IPFire gemeldeten Clientdaten mit IP-Adresse, MAC-Adresse, Hostname, Ablaufzeit und Status. Du findest sie in Home Assistant in der Detailansicht des Sensors unter den Attributen.
+* **Aktive DHCP-Leases** – Anzahl aktiver DHCP-Leases. Das Attribut `leases` enthält die von IPFire gemeldeten Clientdaten mit IP-Adresse, MAC-Adresse, Hostname, Ablaufzeit und Status. HA-IPFire ergänzt außerdem `mac_vendor`, ermittelt anhand des MAC-Adresspräfixes aus einer lokalen Zuordnungstabelle. Bei privaten oder nicht registrierten MAC-Adressen kann der Wert fehlen oder unzutreffend sein. Die Lease-Details findest du in Home Assistant in der Detailansicht des Sensors unter den Attributen.
 
 ### Systemstatus
 
 * **Neustart erforderlich** – zeigt an, wenn IPFire nach einem Update einen Neustart verlangt. Benötigt eine aktuelle Version von `api.cgi`; bei älteren Versionen bleibt der Sensor unbekannt.
-* **Updates verfügbar** – Gesamtzahl der verfügbaren Updates, einschließlich Core- und Paket-Updates.
+* **Updates verfügbar** – Gesamtzahl der verfügbaren Updates, einschließlich Core- und Paket-Updates. Das Attribut `updates` listet die einzelnen Core- und Paket-Updates mit ihren Versionen auf.
+* **IPFire-Systemupdates** – native Home-Assistant-Update-Entität. Sie erscheint im Update-Bereich von Home Assistant, wenn Updates verfügbar sind; die Release-Zusammenfassung listet Core- und Paket-Updates auf. Mit „Installieren“ wird das vollständige Pakfire-Upgrade gestartet, da IPFire keine Auswahl einzelner Updates unterstützt.
+* **Update-Vorgang** – zeigt an, ob ein über die API gestartetes Update inaktiv ist, läuft, abgeschlossen ist oder fehlgeschlagen ist.
 
 ### Internetverbindung
 

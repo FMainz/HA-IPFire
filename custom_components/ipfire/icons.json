@@ -123,6 +123,14 @@
       },
       "updates_available": {
         "default": "mdi:package-up"
+      },
+      "update_operation": {
+        "default": "mdi:progress-clock"
+      }
+    },
+    "update": {
+      "system_updates": {
+        "default": "mdi:package-up"
       }
     },
     "binary_sensor": {

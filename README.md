@@ -87,6 +87,7 @@ HA-IPFire provides the following features:
 * DHCP lease sensor with client details¹
 * Traffic counters for individual network zones¹
 * Reboot-required status and total available update count¹
+* Review available IPFire updates and install the full Pakfire upgrade from Home Assistant¹
 
 ¹Requires `api.cgi` from [IPFire-API](https://github.com/FMainz/IPFire-API).
 
@@ -183,12 +184,14 @@ Sensors are created only for internal interfaces configured on the IPFire firewa
 
 ### DHCP leases
 
-* **Active DHCP Leases** – number of active DHCP leases. The `leases` attribute contains the client records reported by IPFire, including IP address, MAC address, hostname, expiry, and status. To view them, open the sensor's more-info panel in Home Assistant and inspect its attributes.
+* **Active DHCP Leases** – number of active DHCP leases. The `leases` attribute contains the client records reported by IPFire, including IP address, MAC address, hostname, expiry, and status. HA-IPFire also adds `mac_vendor`, looked up locally from the MAC address prefix. This may be unavailable or inaccurate for private or unregistered MAC addresses. To view the lease details, open the sensor's more-info panel in Home Assistant and inspect its attributes.
 
 ### System status
 
 * **Reboot Required** – indicates when IPFire requires a reboot after an update. Requires a current version of `api.cgi`; older versions leave the sensor unknown.
-* **Updates Available** – total number of available updates, including core and package updates.
+* **Updates Available** – total number of available updates, including core and package updates. Its `updates` attribute lists the exact core/package updates and versions.
+* **IPFire System Updates** – native Home Assistant update entity. It appears in Home Assistant's Updates section when updates are available; its release summary lists the included core and package updates. Installing it starts the full Pakfire upgrade, because IPFire does not support selecting individual updates.
+* **Update Operation** – reports whether an API-started update is idle, running, completed, or failed.
 
 ### Internet connection
 

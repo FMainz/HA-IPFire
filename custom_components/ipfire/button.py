@@ -48,7 +48,7 @@ async def async_setup_entry(
     coordinator: IPFireCoordinator = entry.runtime_data.coordinator
 
     async_add_entities(
-        IPFireConnectionButton(
+        IPFireActionButton(
             coordinator,
             entry,
             description,
@@ -57,11 +57,11 @@ async def async_setup_entry(
     )
 
 
-class IPFireConnectionButton(
+class IPFireActionButton(
     CoordinatorEntity[IPFireCoordinator],
     ButtonEntity,
 ):
-    """Represent an IPFire connection control button."""
+    """Represent an IPFire control button."""
 
     _attr_has_entity_name = True
 
@@ -89,5 +89,5 @@ class IPFireConnectionButton(
 
         if self.entity_description.action == "connect":
             await self.coordinator.async_connect()
-        else:
+        elif self.entity_description.action == "disconnect":
             await self.coordinator.async_disconnect()
