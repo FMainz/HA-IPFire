@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from homeassistant.components import persistent_notification
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import __version__ as HA_VERSION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityCategory
@@ -141,7 +142,7 @@ class IPFireActionButton(
         lines = [
             "versions:",
             f"  ha_ipfire: {self._yaml_scalar(integration_version)}",
-            f"  home_assistant: {self._yaml_scalar(self.hass.config.version)}",
+            f"  home_assistant: {self._yaml_scalar(HA_VERSION)}",
             "connection:",
             f"  coordinator_update: {self._yaml_scalar(coordinator_status)}",
             "  ipfire: "
