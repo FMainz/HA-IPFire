@@ -88,6 +88,7 @@ class IPFireInterfaceData:
 class IPFireData:
     """Represent data received from IPFire."""
 
+    api_revision: str | None
     rxb: int
     txb: int
     rx_rate: float
@@ -211,6 +212,7 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
             services = payload.get("services", {})
             addons = payload.get("addons", {})
             updates = payload.get("updates", {})
+            raw_api_revision = payload.get("api_revision")
             if not isinstance(connection, dict):
                 raise ValueError("Invalid connection data from IPFire")
 
@@ -423,6 +425,12 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         self._previous_timestamp = now
 
         return IPFireData(
+            api_revision=(
+                str(raw_api_revision)
+                if isinstance(raw_api_revision, (str, int))
+                and not isinstance(raw_api_revision, bool)
+                else None
+            ),
             rxb=rx_bytes,
             txb=tx_bytes,
             rx_rate=rx_rate,

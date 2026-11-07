@@ -279,6 +279,9 @@
       },
       "disconnect": {
         "name": "Trennen"
+      },
+      "diagnostic_report": {
+        "name": "Bericht für Fehlermeldungen"
       }
     }
   }

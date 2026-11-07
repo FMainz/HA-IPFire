@@ -88,6 +88,7 @@ HA-IPFire provides the following features:
 * Traffic counters for individual network zones¹
 * Reboot-required status and total available update count¹
 * Review available IPFire updates and install the full Pakfire upgrade from Home Assistant¹
+* Generate a privacy-conscious diagnostic report in Home Assistant notifications
 
 ¹Requires `api.cgi` from [IPFire-API](https://github.com/FMainz/IPFire-API).
 
@@ -396,7 +397,9 @@ Current transfer rates are calculated from the traffic counters and are provided
 
 ## Support
 
-If you encounter a problem or have a suggestion, please open an issue in the GitHub repository:
+If you encounter a problem, press **Error Report** in the device's Diagnostics section. The generated notification contains a copyable report with integration and Home Assistant versions, the API revision when reported, API feature availability, and update status. The API revision is included starting with IPFire-API v0.2.1. Review the report before sharing; it excludes credentials, IP addresses, hostnames, and DHCP client details.
+
+You can also open an issue or suggest an improvement in the GitHub repository:
 
 https://github.com/FMainz/HA-IPFire/issues
 

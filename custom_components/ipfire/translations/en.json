@@ -279,6 +279,9 @@
       },
       "disconnect": {
         "name": "Disconnect"
+      },
+      "diagnostic_report": {
+        "name": "Error Report"
       }
     }
   }

@@ -88,6 +88,7 @@ HA-IPFire bietet folgende Funktionen:
 * Trafficzähler für einzelne Netzwerkzonen¹
 * Neustartstatus und Gesamtzahl verfügbarer Updates¹
 * Verfügbare IPFire-Updates anzeigen und das vollständige Pakfire-Upgrade in Home Assistant installieren¹
+* Einen datensparsamen Diagnosebericht in den HA-Benachrichtigungen erstellen
 
 ¹Benötigt api.cgi aus [IPFire-API](https://github.com/FMainz/IPFire-API)
 
@@ -399,7 +400,9 @@ Die aktuellen Übertragungsraten werden aus den Trafficzählern berechnet und al
 
 ## Support
 
-Wenn du einen Fehler findest oder einen Verbesserungsvorschlag hast, kannst du ein Issue im GitHub-Repository erstellen:
+Wenn du einen Fehler findest, betätige **Bericht für Fehlermeldungen** im Bereich Diagnose des Geräts. Die Benachrichtigung enthält einen kopierbaren Bericht mit den Versionen von HA-IPFire und Home Assistant, der API-Revision (falls von der API gemeldet), der Verfügbarkeit von API-Funktionen und dem Update-Status. Die API-Revision wird ab IPFire-API v0.2.1 ausgegeben. Prüfe den Bericht vor dem Teilen; Zugangsdaten, IP-Adressen, Hostnamen und DHCP-Clientdaten werden ausgelassen.
+
+Du kannst auch ein Issue erstellen oder einen Verbesserungsvorschlag im GitHub-Repository einreichen:
 
 https://github.com/FMainz/HA-IPFire/issues
 

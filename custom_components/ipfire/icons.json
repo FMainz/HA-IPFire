@@ -133,6 +133,11 @@
         "default": "mdi:package-up"
       }
     },
+    "button": {
+      "diagnostic_report": {
+        "default": "mdi:bug-outline"
+      }
+    },
     "binary_sensor": {
       "reboot_required": {
         "default": "mdi:restart-alert"
