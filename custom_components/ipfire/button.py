@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 
 from homeassistant.components import persistent_notification
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
@@ -14,6 +14,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.loader import async_get_loaded_integration
 
@@ -157,6 +158,8 @@ class IPFireActionButton(
                     f"    {domain}:",
                     f"      enabled: {counts['enabled']}",
                     f"      disabled: {counts['disabled']}",
+                    f"      unavailable: {counts['unavailable']}",
+                    f"      unknown: {counts['unknown']}",
                 ]
             )
 
@@ -232,20 +235,20 @@ class IPFireActionButton(
             )
 
         report = "\n".join(lines)
-        is_german = self.hass.config.language.startswith("de")
-        title = (
-            "HA-IPFire: Fehlerbericht"
-            if is_german
-            else "HA-IPFire: Error report"
+        translations = await async_get_translations(
+            self.hass,
+            self.hass.config.language,
+            "common",
+            {DOMAIN},
         )
-        notice = (
-            "Prüfe den Bericht vor dem Teilen. Er enthält keine Zugangsdaten, "
-            "IP-Adressen, Hostnamen oder DHCP-Clientdaten."
-            if is_german
-            else (
-                "Review this report before sharing it. It excludes credentials, "
-                "IP addresses, hostnames, and DHCP client details."
-            )
+        title = translations.get(
+            f"component.{DOMAIN}.common.diagnostic_report_title",
+            "HA-IPFire: Error report",
+        )
+        notice = translations.get(
+            f"component.{DOMAIN}.common.diagnostic_report_notice",
+            "Review this report before sharing it. It excludes credentials, "
+            "IP addresses, hostnames, and DHCP client details.",
         )
         message = f"{notice}\n\n```yaml\n{report}\n```"
         persistent_notification.async_create(
@@ -256,7 +259,7 @@ class IPFireActionButton(
         )
 
     def _entity_counts(self) -> dict[str, dict[str, int]]:
-        """Count enabled and disabled entities without including entity IDs."""
+        """Count entity states without including entity IDs."""
         registry = er.async_get(self.hass)
         counts: dict[str, dict[str, int]] = {}
         for entity in er.async_entries_for_config_entry(
@@ -272,16 +275,29 @@ class IPFireActionButton(
                 continue
             domain_counts = counts.setdefault(
                 entity.domain,
-                {"enabled": 0, "disabled": 0},
+                {
+                    "enabled": 0,
+                    "disabled": 0,
+                    "unavailable": 0,
+                    "unknown": 0,
+                },
             )
-            key = "disabled" if entity.disabled_by is not None else "enabled"
-            domain_counts[key] += 1
+            if entity.disabled_by is not None:
+                domain_counts["disabled"] += 1
+                continue
+
+            domain_counts["enabled"] += 1
+            state = self.hass.states.get(entity.entity_id)
+            if state is not None and state.state in {"unavailable", "unknown"}:
+                domain_counts[state.state] += 1
         return dict(sorted(counts.items()))
 
     @staticmethod
     def _format_utc(value: object) -> str | None:
         """Format a timestamp as an ISO 8601 UTC value."""
-        return value.isoformat() if isinstance(value, datetime) else None
+        if not isinstance(value, datetime):
+            return None
+        return value.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
     @staticmethod
     def _safe_operation_status(

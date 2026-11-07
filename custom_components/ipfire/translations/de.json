@@ -63,6 +63,10 @@
       }
     }
   },
+  "common": {
+    "diagnostic_report_title": "HA-IPFire: Fehlerbericht",
+    "diagnostic_report_notice": "Prüfe den Bericht vor dem Teilen. Er enthält keine Zugangsdaten, IP-Adressen, Hostnamen oder DHCP-Clientdaten."
+  },
   "entity": {
     "sensor": {
       "download": {

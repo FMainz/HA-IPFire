@@ -397,7 +397,7 @@ Current transfer rates are calculated from the traffic counters and are provided
 
 ## Support
 
-If you encounter a problem, press **Error Report** in the device's Diagnostics section. The generated notification contains a copyable report with integration and Home Assistant versions, the configured scan interval, enabled and disabled entity counts, UTC timestamps for the last successful update and last error, a sanitized last error, the DHCP lease count, API feature availability, and update status. The API revision is included starting with IPFire-API v0.2.1. Review the report before sharing; it excludes credentials, IP addresses, hostnames, and DHCP client details.
+If you encounter a problem, press **Error Report** in the device's Diagnostics section. The generated notification contains a copyable report with integration and Home Assistant versions, the configured scan interval, enabled and disabled entity counts, counts of enabled entities in `unavailable` or `unknown` state, UTC timestamps for the last successful update and last error (to the second), a sanitized last error, the DHCP lease count, API feature availability, and update status. The API revision is included starting with IPFire-API v0.2.1. Review the report before sharing; it excludes credentials, IP addresses, hostnames, and DHCP client details.
 
 You can also open an issue or suggest an improvement in the GitHub repository:
 

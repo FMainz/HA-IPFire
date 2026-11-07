@@ -63,6 +63,10 @@
       }
     }
   },
+  "common": {
+    "diagnostic_report_title": "HA-IPFire: Error report",
+    "diagnostic_report_notice": "Review this report before sharing it. It excludes credentials, IP addresses, hostnames, and DHCP client details."
+  },
   "entity": {
     "sensor": {
       "download": {
