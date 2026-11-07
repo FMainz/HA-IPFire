@@ -4,7 +4,7 @@ import logging
 import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import aiohttp
 
@@ -14,6 +14,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
+from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN, API_PATH
 _LOGGER = logging.getLogger(__name__)
@@ -137,11 +138,25 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         self.password = password
         self.verify_ssl = verify_ssl
 
+        self.last_successful_update_utc: datetime | None = None
+        self.last_error_utc: datetime | None = None
+        self.last_update_error: BaseException | None = None
+
         self._previous_rx_bytes: int | None = None
         self._previous_tx_bytes: int | None = None
         self._previous_timestamp: float | None = None
         self._previous_cpu_total: int | None = None
         self._previous_cpu_idle: int | None = None
+
+    def _async_refresh_finished(self) -> None:
+        """Keep UTC timestamps and the last update error for diagnostics."""
+        if self.last_update_success:
+            self.last_successful_update_utc = dt_util.utcnow()
+            return
+
+        if self.last_exception is not None:
+            self.last_error_utc = dt_util.utcnow()
+            self.last_update_error = self.last_exception
 
     @property
     def api_url(self) -> str:

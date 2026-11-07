@@ -400,11 +400,15 @@ Die aktuellen Übertragungsraten werden aus den Trafficzählern berechnet und al
 
 ## Support
 
-Wenn du einen Fehler findest, betätige **Bericht für Fehlermeldungen** im Bereich Diagnose des Geräts. Die Benachrichtigung enthält einen kopierbaren Bericht mit den Versionen von HA-IPFire und Home Assistant, der API-Revision (falls von der API gemeldet), der Verfügbarkeit von API-Funktionen und dem Update-Status. Die API-Revision wird ab IPFire-API v0.2.1 ausgegeben. Prüfe den Bericht vor dem Teilen; Zugangsdaten, IP-Adressen, Hostnamen und DHCP-Clientdaten werden ausgelassen.
+Wenn du einen Fehler findest, betätige **Bericht für Fehlermeldungen** im Bereich Diagnose des Geräts. Die Benachrichtigung enthält einen kopierbaren Bericht mit den Versionen von HA-IPFire und Home Assistant, dem eingestellten Abfrageintervall, der Anzahl aktivierter und deaktivierter Entitäten, UTC-Zeitpunkten der letzten erfolgreichen Abfrage und des letzten Fehlers, einer bereinigten Fehlermeldung, der Anzahl der DHCP-Leases, der Verfügbarkeit von API-Funktionen und dem Update-Status. Die API-Revision wird ab IPFire-API v0.2.1 ausgegeben. Prüfe den Bericht vor dem Teilen; Zugangsdaten, IP-Adressen, Hostnamen und DHCP-Clientdaten werden ausgelassen.
 
 Du kannst auch ein Issue erstellen oder einen Verbesserungsvorschlag im GitHub-Repository einreichen:
 
 https://github.com/FMainz/HA-IPFire/issues
+
+Wenn dir HA-IPFire weiterhilft, kannst du die Weiterentwicklung auf Ko-fi unterstützen:
+
+[![FMainz auf Ko-fi unterstützen](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/fmainz)
 
 ## Repository
 
