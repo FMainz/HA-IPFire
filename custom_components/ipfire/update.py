@@ -196,6 +196,23 @@ class IPFireRebootUpdateEntity(
             and self.coordinator.data.system.reboot_required is True
         )
 
+    @property
+    def installed_version(self) -> str | None:
+        """Return the currently running IPFire version."""
+        if self.coordinator.data is None:
+            return None
+        return self.coordinator.data.system.version
+
+    @property
+    def latest_version(self) -> str | None:
+        """Change the update state while a reboot is required."""
+        if self.coordinator.data is None:
+            return None
+        version = self.coordinator.data.system.version
+        if self.has_update:
+            return f"{version} (reboot required)"
+        return version
+
     async def async_install(
         self,
         version: str | None,
