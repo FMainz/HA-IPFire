@@ -63,6 +63,10 @@
       }
     }
   },
+  "common": {
+    "diagnostic_report_title": "HA-IPFire: Error report",
+    "diagnostic_report_notice": "Review this report before sharing it. It excludes credentials, IP addresses, hostnames, and DHCP client details."
+  },
   "entity": {
     "sensor": {
       "download": {
@@ -187,6 +191,17 @@
       "updates_available": {
         "name": "Updates Available"
       },
+      "update_operation": {
+        "name": "Update Operation",
+        "state": {
+          "idle": "Idle",
+          "starting": "Starting",
+          "running": "Running",
+          "completed": "Completed",
+          "failed": "Failed",
+          "unknown": "Unknown"
+        }
+      },
       "external_ip": {
         "name": "External IP Address"
       },
@@ -257,12 +272,23 @@
         "name": "D-Bus Daemon"
       }
     },
+    "update": {
+      "system_updates": {
+        "name": "IPFire System Updates"
+      },
+      "reboot": {
+        "name": "Restart router"
+      }
+    },
     "button": {
       "connect": {
         "name": "Connect"
       },
       "disconnect": {
         "name": "Disconnect"
+      },
+      "diagnostic_report": {
+        "name": "Error Report"
       }
     }
   }

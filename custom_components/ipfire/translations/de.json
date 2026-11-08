@@ -63,6 +63,10 @@
       }
     }
   },
+  "common": {
+    "diagnostic_report_title": "HA-IPFire: Fehlerbericht",
+    "diagnostic_report_notice": "Prüfe den Bericht vor dem Teilen. Er enthält keine Zugangsdaten, IP-Adressen, Hostnamen oder DHCP-Clientdaten."
+  },
   "entity": {
     "sensor": {
       "download": {
@@ -187,6 +191,17 @@
       "updates_available": {
         "name": "Updates verfügbar"
       },
+      "update_operation": {
+        "name": "Update-Vorgang",
+        "state": {
+          "idle": "Inaktiv",
+          "starting": "Startet",
+          "running": "Läuft",
+          "completed": "Abgeschlossen",
+          "failed": "Fehlgeschlagen",
+          "unknown": "Unbekannt"
+        }
+      },
       "external_ip": {
         "name": "Externe IP-Adresse"
       },
@@ -257,12 +272,23 @@
         "name": "D-Bus Daemon"
       }
     },
+    "update": {
+      "system_updates": {
+        "name": "IPFire-Systemupdates"
+      },
+      "reboot": {
+        "name": "Router neu starten"
+      }
+    },
     "button": {
       "connect": {
         "name": "Verbinden"
       },
       "disconnect": {
         "name": "Trennen"
+      },
+      "diagnostic_report": {
+        "name": "Bericht für Fehlermeldungen"
       }
     }
   }

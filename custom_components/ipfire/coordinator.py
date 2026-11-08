@@ -4,7 +4,7 @@ import logging
 import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import aiohttp
 
@@ -14,6 +14,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
+from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN, API_PATH
 _LOGGER = logging.getLogger(__name__)
@@ -88,6 +89,7 @@ class IPFireInterfaceData:
 class IPFireData:
     """Represent data received from IPFire."""
 
+    api_revision: str | None
     rxb: int
     txb: int
     rx_rate: float
@@ -102,6 +104,8 @@ class IPFireData:
     system: IPFireSystemData
     network: IPFireNetworkData
     dhcp_leases: tuple[dict[str, object], ...] | None
+    available_updates: tuple[dict[str, object], ...] | None
+    update_operation: dict[str, object] | None
     services: dict[str, bool]
     addons: dict[str, dict[str, bool]]
 
@@ -134,11 +138,25 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         self.password = password
         self.verify_ssl = verify_ssl
 
+        self.last_successful_update_utc: datetime | None = None
+        self.last_error_utc: datetime | None = None
+        self.last_update_error: BaseException | None = None
+
         self._previous_rx_bytes: int | None = None
         self._previous_tx_bytes: int | None = None
         self._previous_timestamp: float | None = None
         self._previous_cpu_total: int | None = None
         self._previous_cpu_idle: int | None = None
+
+    def _async_refresh_finished(self) -> None:
+        """Keep UTC timestamps and the last update error for diagnostics."""
+        if self.last_update_success:
+            self.last_successful_update_utc = dt_util.utcnow()
+            return
+
+        if self.last_exception is not None:
+            self.last_error_utc = dt_util.utcnow()
+            self.last_update_error = self.last_exception
 
     @property
     def api_url(self) -> str:
@@ -195,7 +213,7 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         except ConfigEntryAuthFailed:
             raise
 
-        except (aiohttp.ClientError, ValueError) as err:
+        except (aiohttp.ClientError, TimeoutError, ValueError) as err:
             raise UpdateFailed(
                 f"Unable to read data from IPFire: {err}"
             ) from err
@@ -208,6 +226,8 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
             dhcp = payload.get("dhcp", {})
             services = payload.get("services", {})
             addons = payload.get("addons", {})
+            updates = payload.get("updates", {})
+            raw_api_revision = payload.get("api_revision")
             if not isinstance(connection, dict):
                 raise ValueError("Invalid connection data from IPFire")
 
@@ -228,6 +248,25 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
 
             if not isinstance(addons, dict):
                 raise ValueError("Invalid addons data from IPFire")
+
+            if not isinstance(updates, dict):
+                raise ValueError("Invalid update data from IPFire")
+
+            raw_available_updates = updates.get("available")
+            if raw_available_updates is not None and (
+                not isinstance(raw_available_updates, list)
+                or not all(
+                    isinstance(update, dict)
+                    for update in raw_available_updates
+                )
+            ):
+                raise ValueError("Invalid available update list from IPFire")
+
+            raw_update_operation = updates.get("operation")
+            if raw_update_operation is not None and not isinstance(
+                raw_update_operation, dict
+            ):
+                raise ValueError("Invalid update operation data from IPFire")
 
             raw_interfaces = network.get("interfaces", {})
             if not isinstance(raw_interfaces, dict):
@@ -401,6 +440,12 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         self._previous_timestamp = now
 
         return IPFireData(
+            api_revision=(
+                str(raw_api_revision)
+                if isinstance(raw_api_revision, (str, int))
+                and not isinstance(raw_api_revision, bool)
+                else None
+            ),
             rxb=rx_bytes,
             txb=tx_bytes,
             rx_rate=rx_rate,
@@ -415,6 +460,16 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
             system=system_data,
             network=network_data,
             dhcp_leases=dhcp_leases,
+            available_updates=(
+                tuple(raw_available_updates)
+                if isinstance(raw_available_updates, list)
+                else None
+            ),
+            update_operation=(
+                dict(raw_update_operation)
+                if isinstance(raw_update_operation, dict)
+                else None
+            ),
             services=services,
             addons=addons,
         )
@@ -426,6 +481,114 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
     async def async_disconnect(self) -> None:
         """Disconnect the IPFire Internet connection."""
         await self._async_connection_action("disconnect")
+
+    async def async_start_upgrade(self) -> None:
+        """Start installing all updates available on IPFire."""
+        try:
+            async with self.session.post(
+                self.api_url,
+                auth=self._auth(),
+                ssl=self.verify_ssl,
+                headers={"X-IPFire-API": "1"},
+                data={"action": "upgrade"},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as response:
+                if response.status in (401, 403):
+                    raise ConfigEntryAuthFailed(
+                        "Invalid IPFire username or password"
+                    )
+
+                try:
+                    payload = await response.json(content_type=None)
+                except (ValueError, TypeError):
+                    payload = {}
+
+                if not isinstance(payload, dict):
+                    raise UpdateFailed(
+                        "IPFire returned an invalid upgrade response"
+                    )
+
+                if (
+                    response.status >= 400
+                    or payload.get("result") != "accepted"
+                ):
+                    error = payload.get("error", "unknown_error")
+                    raise UpdateFailed(
+                        f"Unable to start IPFire upgrade: {error}"
+                    )
+
+        except ConfigEntryAuthFailed:
+            raise
+
+        except (aiohttp.ClientError, ValueError) as err:
+            raise UpdateFailed(
+                f"Unable to start IPFire upgrade: {err}"
+            ) from err
+
+        await self.async_request_refresh()
+
+    @property
+    def supports_reboot_action(self) -> bool:
+        """Return whether the installed API supports reboot requests."""
+        if self.data is None or self.data.api_revision is None:
+            return False
+        try:
+            revision = tuple(
+                int(part) for part in self.data.api_revision.split(".")
+            )
+        except ValueError:
+            return False
+        return revision >= (0, 2, 5)
+
+    async def async_reboot(self) -> None:
+        """Start an IPFire reboot when the API reports it is required."""
+        if (
+            not self.supports_reboot_action
+            or self.data is None
+            or self.data.system.reboot_required is not True
+        ):
+            raise UpdateFailed("IPFire does not currently require a reboot")
+
+        try:
+            async with self.session.post(
+                self.api_url,
+                auth=self._auth(),
+                ssl=self.verify_ssl,
+                headers={"X-IPFire-API": "1"},
+                data={"action": "reboot"},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as response:
+                if response.status in (401, 403):
+                    raise ConfigEntryAuthFailed(
+                        "Invalid IPFire username or password"
+                    )
+
+                try:
+                    payload = await response.json(content_type=None)
+                except (ValueError, TypeError):
+                    payload = {}
+
+                if not isinstance(payload, dict):
+                    raise UpdateFailed(
+                        "IPFire returned an invalid reboot response"
+                    )
+
+                if (
+                    response.status >= 400
+                    or payload.get("result") != "accepted"
+                ):
+                    error = payload.get("error", "unknown_error")
+                    raise UpdateFailed(
+                        f"Unable to start IPFire reboot: {error}"
+                    )
+
+        except ConfigEntryAuthFailed:
+            raise
+
+        except (aiohttp.ClientError, TimeoutError, ValueError) as err:
+            raise UpdateFailed(
+                f"Unable to start IPFire reboot: {err}"
+            ) from err
 
     async def _async_connection_action(self, action: str) -> None:
         """Execute a connection action on IPFire."""

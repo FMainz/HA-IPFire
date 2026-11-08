@@ -1,4 +1,4 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![marketplace_badge](https://img.shields.io/badge/Marketplace-Custom-41BDF5.svg)](https://www.home-assistant.io/integrations/marketplace)
 [![GitHub release](https://img.shields.io/github/release/fmainz/ha-ipfire?include_prereleases=&sort=semver&color=blue)](https://github.com/fmainz/ha-ipfire/releases/)
 ![last commit](https://img.shields.io/github/last-commit/fmainz/ha-ipfire)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -40,6 +40,14 @@ Diese Dokumentation ist auch in 🇬🇧 [englischer Sprache](README.md) verfüg
 ---
 
 ## Neues in dieser Version
+
+### v0.3.7
+
+* Datenschutzbewussten Diagnosebericht mit Integrations- und Verbindungsstatus, Verfügbarkeit der API-Daten, Update-Status, Entitätsanzahlen, UTC-Zeitangaben und bereinigten Fehlerinformationen hinzugefügt. Der normale Zustand `unknown` von Button-Entitäten wird bei der Anzahl nicht verfügbarer oder unbekannter Entitäten nicht mitgezählt. Zugangsdaten, IP-Adressen, Hostnamen und DHCP-Clientdaten werden im Bericht nicht ausgegeben. Die API-Revision erscheint, wenn IPFire-API v0.2.1 oder neuer sie bereitstellt.
+* Netzwerkhersteller (`mac_vendor`) zu den DHCP-Lease-Attributen hinzugefügt. Die Zuordnung erfolgt lokal anhand der MAC-Adresse des Lease.
+* Native Home-Assistant-Update-Entität hinzugefügt, die verfügbare IPFire-Core- und Paket-Updates anzeigt und das vollständige Pakfire-Upgrade starten kann.
+* Statusmeldung für den Update-Vorgang sowie eine native Home-Assistant-Update-Aktion zum Starten eines erforderlichen IPFire-Neustarts hinzugefügt. Die Update- und Neustartfunktionen benötigen eine kompatible `api.cgi`; für den Neustart ist IPFire-API v0.2.5 oder neuer erforderlich.
+* Versionsanforderung für `aiooui` angepasst, sodass kompatible Versionen ab 0.1.9 verwendet werden können.
 
 ### v0.3.6
 
@@ -87,6 +95,9 @@ HA-IPFire bietet folgende Funktionen:
 * DHCP-Lease-Sensor mit Clientdaten¹
 * Trafficzähler für einzelne Netzwerkzonen¹
 * Neustartstatus und Gesamtzahl verfügbarer Updates¹
+* Verfügbare IPFire-Updates anzeigen und das vollständige Pakfire-Upgrade in Home Assistant installieren¹
+* Einen erforderlichen IPFire-Neustart über die native HA-Update-Ansicht bestätigen und starten¹
+* Einen datensparsamen Diagnosebericht in den HA-Benachrichtigungen erstellen
 
 ¹Benötigt api.cgi aus [IPFire-API](https://github.com/FMainz/IPFire-API)
 
@@ -181,12 +192,15 @@ Sensoren werden nur für interne Schnittstellen angelegt, die auf der IPFire-Fir
 
 ### DHCP-Leases
 
-* **Aktive DHCP-Leases** – Anzahl aktiver DHCP-Leases. Das Attribut `leases` enthält die von IPFire gemeldeten Clientdaten mit IP-Adresse, MAC-Adresse, Hostname, Ablaufzeit und Status. Du findest sie in Home Assistant in der Detailansicht des Sensors unter den Attributen.
+* **Aktive DHCP-Leases** – Anzahl aktiver DHCP-Leases. Das Attribut `leases` enthält die von IPFire gemeldeten Clientdaten mit IP-Adresse, MAC-Adresse, Hostname, Ablaufzeit und Status. HA-IPFire ergänzt außerdem `mac_vendor`, ermittelt anhand des MAC-Adresspräfixes aus einer lokalen Zuordnungstabelle. Bei privaten oder nicht registrierten MAC-Adressen kann der Wert fehlen oder unzutreffend sein. Die Lease-Details findest du in Home Assistant in der Detailansicht des Sensors unter den Attributen.
 
 ### Systemstatus
 
 * **Neustart erforderlich** – zeigt an, wenn IPFire nach einem Update einen Neustart verlangt. Benötigt eine aktuelle Version von `api.cgi`; bei älteren Versionen bleibt der Sensor unbekannt.
-* **Updates verfügbar** – Gesamtzahl der verfügbaren Updates, einschließlich Core- und Paket-Updates.
+* **Updates verfügbar** – Gesamtzahl der verfügbaren Updates, einschließlich Core- und Paket-Updates. Das Attribut `updates` listet die einzelnen Core- und Paket-Updates mit ihren Versionen auf.
+* **IPFire-Systemupdates** – native Home-Assistant-Update-Entität. Sie erscheint im Update-Bereich von Home Assistant, wenn Updates verfügbar sind; die Release-Zusammenfassung listet Core- und Paket-Updates auf. Mit „Installieren“ wird das vollständige Pakfire-Upgrade gestartet, da IPFire keine Auswahl einzelner Updates unterstützt.
+* **Update-Vorgang** – zeigt an, ob ein über die API gestartetes Update inaktiv ist, läuft, abgeschlossen ist oder fehlgeschlagen ist.
+* **Router neu starten** – erscheint als native Home-Assistant-Update-Aktion, wenn `api.cgi` ab Revision 0.2.5 einen erforderlichen Neustart meldet. Über die Update-Ansicht kannst du den Router-Neustart nach Bestätigung starten.
 
 ### Internetverbindung
 
@@ -396,9 +410,15 @@ Die aktuellen Übertragungsraten werden aus den Trafficzählern berechnet und al
 
 ## Support
 
-Wenn du einen Fehler findest oder einen Verbesserungsvorschlag hast, kannst du ein Issue im GitHub-Repository erstellen:
+Wenn du einen Fehler findest, betätige **Bericht für Fehlermeldungen** im Bereich Diagnose des Geräts. Die Benachrichtigung enthält einen kopierbaren Bericht mit den Versionen von HA-IPFire und Home Assistant, dem eingestellten Abfrageintervall, der Anzahl aktivierter und deaktivierter Entitäten, der Anzahl aktivierter Entitäten mit dem Status `unavailable` oder `unknown` (der normale `unknown`-Status von Buttons wird ausgelassen), UTC-Zeitpunkten der letzten erfolgreichen Abfrage und des letzten Fehlers (sekundengenau), einer bereinigten Fehlermeldung, der Anzahl der DHCP-Leases, der Verfügbarkeit von API-Funktionen und dem Update-Status. Die API-Revision wird ab IPFire-API v0.2.1 ausgegeben. Prüfe den Bericht vor dem Teilen; Zugangsdaten, IP-Adressen, Hostnamen und DHCP-Clientdaten werden ausgelassen.
+
+Du kannst auch ein Issue erstellen oder einen Verbesserungsvorschlag im GitHub-Repository einreichen:
 
 https://github.com/FMainz/HA-IPFire/issues
+
+Wenn dir HA-IPFire weiterhilft, kannst du die Weiterentwicklung auf Ko-fi unterstützen:
+
+[![FMainz auf Ko-fi unterstützen](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/fmainz)
 
 ## Repository
 

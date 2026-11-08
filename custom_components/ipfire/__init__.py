@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 
+import aiooui
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
@@ -20,7 +22,7 @@ from .const import (
 from .coordinator import IPFireCoordinator
 
 
-PLATFORMS: list[str] = ["binary_sensor", "button", "sensor"]
+PLATFORMS: list[str] = ["binary_sensor", "button", "sensor", "update"]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -57,6 +59,9 @@ async def async_setup_entry(
     entry: IPFireConfigEntry,
 ) -> bool:
     """Set up HA-IPFire from a config entry."""
+
+    if not aiooui.is_loaded():
+        await aiooui.async_load()
 
     session = async_get_clientsession(hass)
 

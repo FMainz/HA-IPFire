@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import aiooui
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -348,6 +350,7 @@ async def async_setup_entry(
     ]
 
     entities.append(IPFireDHCPLeasesSensor(coordinator, entry))
+    entities.append(IPFireUpdateOperationSensor(coordinator, entry))
 
     # The overall Download/Upload sensors represent the RED (WAN) interface.
     # Add separate byte counters for the internal GREEN, ORANGE, and BLUE zones.
@@ -412,6 +415,76 @@ class IPFireTrafficSensor(
 
         return value
 
+    @property
+    def extra_state_attributes(self) -> dict[str, object] | None:
+        """Expose update details and operation state on the update count sensor."""
+        if (
+            self.entity_description.key != "package_updates"
+            or self.coordinator.data is None
+        ):
+            return None
+
+        data = self.coordinator.data
+        attributes: dict[str, object] = {}
+        if data.available_updates is not None:
+            attributes["updates"] = [
+                dict(update) for update in data.available_updates
+            ]
+        if data.update_operation is not None:
+            attributes["operation"] = dict(data.update_operation)
+        return attributes or None
+
+
+class IPFireUpdateOperationSensor(
+    CoordinatorEntity[IPFireCoordinator],
+    SensorEntity,
+):
+    """Report the state of an update started through the API."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "update_operation"
+    _attr_entity_registry_enabled_default = True
+
+    def __init__(
+        self,
+        coordinator: IPFireCoordinator,
+        entry: ConfigEntry,
+    ) -> None:
+        """Initialize the update operation sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_update_operation"
+        self._attr_device_info = DeviceInfo(
+            identifiers={("ipfire", entry.entry_id)},
+            name="IPFire",
+            manufacturer="IPFire",
+            model="Firewall",
+        )
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the Pakfire update operation state."""
+        if self.coordinator.data is None:
+            return None
+        operation = self.coordinator.data.update_operation
+        if operation is None:
+            return None
+        status = operation.get("status")
+        return status if isinstance(status, str) else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object] | None:
+        """Expose operation timestamps and errors for diagnostics."""
+        if self.coordinator.data is None:
+            return None
+        operation = self.coordinator.data.update_operation
+        if operation is None:
+            return None
+        return {
+            key: operation[key]
+            for key in ("started_at", "finished_at", "exit_code", "error")
+            if key in operation
+        }
+
 
 class IPFireDHCPLeasesSensor(
     CoordinatorEntity[IPFireCoordinator],
@@ -457,7 +530,23 @@ class IPFireDHCPLeasesSensor(
         leases = self.coordinator.data.dhcp_leases
         if leases is None:
             return None
-        return {"leases": [dict(lease) for lease in leases]}
+
+        lease_attributes: list[dict[str, object]] = []
+        for lease in leases:
+            lease_data = dict(lease)
+            mac_address = lease_data.get("mac_address") or lease_data.get(
+                "mac"
+            )
+            if isinstance(mac_address, str) and mac_address:
+                try:
+                    lease_data["mac_vendor"] = aiooui.get_vendor(mac_address)
+                except (TypeError, ValueError):
+                    lease_data["mac_vendor"] = None
+            else:
+                lease_data["mac_vendor"] = None
+            lease_attributes.append(lease_data)
+
+        return {"leases": lease_attributes}
 
 
 class IPFireInterfaceTrafficSensor(

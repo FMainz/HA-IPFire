@@ -1,4 +1,4 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![marketplace_badge](https://img.shields.io/badge/Marketplace-Custom-41BDF5.svg)](https://www.home-assistant.io/integrations/marketplace)
 [![GitHub release](https://img.shields.io/github/release/fmainz/ha-ipfire?include_prereleases=&sort=semver&color=blue)](https://github.com/fmainz/ha-ipfire/releases/)
 ![last commit](https://img.shields.io/github/last-commit/fmainz/ha-ipfire)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -40,6 +40,14 @@ This documentation is also available in 🇩🇪 [German](README-de.md).
 ---
 
 ## What’s New in This Version
+
+### v0.3.7
+
+* Added a privacy-conscious diagnostic report with integration and connection status, API data availability, update status, entity counts, UTC timestamps and sanitized error details. Button entities in their normal `unknown` state are excluded from the unavailable/unknown count; the report omits credentials, IP addresses, hostnames and DHCP client details. API revision is included when supported by IPFire-API v0.2.1 or later.
+* Added the network-card vendor (`mac_vendor`) to DHCP lease attributes, looked up locally from the lease MAC address.
+* Added a native Home Assistant update entity that shows available IPFire core and package updates and can start the full Pakfire upgrade.
+* Added update-operation status reporting and a native Home Assistant update action for starting a required IPFire reboot. These update and reboot features require a compatible `api.cgi`; reboot requires IPFire-API v0.2.5 or later.
+* Updated the `aiooui` dependency requirement to accept compatible versions from 0.1.9 onward.
 
 ### v0.3.6
 
@@ -87,6 +95,9 @@ HA-IPFire provides the following features:
 * DHCP lease sensor with client details¹
 * Traffic counters for individual network zones¹
 * Reboot-required status and total available update count¹
+* Review available IPFire updates and install the full Pakfire upgrade from Home Assistant¹
+* Confirm and start a required IPFire reboot through Home Assistant's native Updates interface¹
+* Generate a privacy-conscious diagnostic report in Home Assistant notifications
 
 ¹Requires `api.cgi` from [IPFire-API](https://github.com/FMainz/IPFire-API).
 
@@ -183,12 +194,15 @@ Sensors are created only for internal interfaces configured on the IPFire firewa
 
 ### DHCP leases
 
-* **Active DHCP Leases** – number of active DHCP leases. The `leases` attribute contains the client records reported by IPFire, including IP address, MAC address, hostname, expiry, and status. To view them, open the sensor's more-info panel in Home Assistant and inspect its attributes.
+* **Active DHCP Leases** – number of active DHCP leases. The `leases` attribute contains the client records reported by IPFire, including IP address, MAC address, hostname, expiry, and status. HA-IPFire also adds `mac_vendor`, looked up locally from the MAC address prefix. This may be unavailable or inaccurate for private or unregistered MAC addresses. To view the lease details, open the sensor's more-info panel in Home Assistant and inspect its attributes.
 
 ### System status
 
 * **Reboot Required** – indicates when IPFire requires a reboot after an update. Requires a current version of `api.cgi`; older versions leave the sensor unknown.
-* **Updates Available** – total number of available updates, including core and package updates.
+* **Updates Available** – total number of available updates, including core and package updates. Its `updates` attribute lists the exact core/package updates and versions.
+* **IPFire System Updates** – native Home Assistant update entity. It appears in Home Assistant's Updates section when updates are available; its release summary lists the included core and package updates. Installing it starts the full Pakfire upgrade, because IPFire does not support selecting individual updates.
+* **Update Operation** – reports whether an API-started update is idle, running, completed, or failed.
+* **Restart router** – appears as a native Home Assistant update action when `api.cgi` revision 0.2.5 or newer reports that a reboot is required. Start the router reboot from the Updates interface after confirmation.
 
 ### Internet connection
 
@@ -393,9 +407,15 @@ Current transfer rates are calculated from the traffic counters and are provided
 
 ## Support
 
-If you encounter a problem or have a suggestion, please open an issue in the GitHub repository:
+If you encounter a problem, press **Error Report** in the device's Diagnostics section. The generated notification contains a copyable report with integration and Home Assistant versions, the configured scan interval, enabled and disabled entity counts, counts of enabled entities in `unavailable` or `unknown` state (the normal `unknown` state of buttons is excluded), UTC timestamps for the last successful update and last error (to the second), a sanitized last error, the DHCP lease count, API feature availability, and update status. The API revision is included starting with IPFire-API v0.2.1. Review the report before sharing; it excludes credentials, IP addresses, hostnames, and DHCP client details.
+
+You can also open an issue or suggest an improvement in the GitHub repository:
 
 https://github.com/FMainz/HA-IPFire/issues
+
+If you find HA-IPFire useful, you can support its ongoing development on Ko-fi:
+
+[![Support FMainz on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/fmainz)
 
 ## Repository
 
