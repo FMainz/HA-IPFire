@@ -23,9 +23,14 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the IPFire system update entity."""
+    """Set up IPFire update entities."""
     coordinator: IPFireCoordinator = entry.runtime_data.coordinator
-    async_add_entities([IPFireSystemUpdateEntity(coordinator, entry)])
+    async_add_entities(
+        [
+            IPFireSystemUpdateEntity(coordinator, entry),
+            IPFireRebootUpdateEntity(coordinator, entry),
+        ]
+    )
 
 
 class IPFireSystemUpdateEntity(
@@ -150,3 +155,52 @@ class IPFireSystemUpdateEntity(
         if self.coordinator.data is None:
             return None
         return self.coordinator.data.available_updates
+
+
+class IPFireRebootUpdateEntity(
+    CoordinatorEntity[IPFireCoordinator],
+    UpdateEntity,
+):
+    """Offer a native Home Assistant update action for a required IPFire reboot."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "reboot"
+    _attr_icon = "mdi:restart"
+    _attr_supported_features = UpdateEntityFeature.INSTALL
+
+    def __init__(
+        self,
+        coordinator: IPFireCoordinator,
+        entry: ConfigEntry,
+    ) -> None:
+        """Initialize the reboot update entity."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry.entry_id}_reboot"
+        self._attr_device_info = DeviceInfo(
+            identifiers={("ipfire", entry.entry_id)},
+            name="IPFire",
+            manufacturer="IPFire",
+            model="Firewall",
+        )
+
+    @property
+    def available(self) -> bool:
+        """Require an API revision that supports reboot requests."""
+        return super().available and self.coordinator.supports_reboot_action
+
+    @property
+    def has_update(self) -> bool:
+        """Report a reboot action when IPFire requires a restart."""
+        return (
+            self.coordinator.data is not None
+            and self.coordinator.data.system.reboot_required is True
+        )
+
+    async def async_install(
+        self,
+        version: str | None,
+        backup: bool,
+        **kwargs: Any,
+    ) -> None:
+        """Start the IPFire reboot after Home Assistant confirmation."""
+        await self.coordinator.async_reboot()

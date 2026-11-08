@@ -275,6 +275,9 @@
     "update": {
       "system_updates": {
         "name": "IPFire-Systemupdates"
+      },
+      "reboot": {
+        "name": "Router neu starten"
       }
     },
     "button": {

@@ -213,7 +213,7 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
         except ConfigEntryAuthFailed:
             raise
 
-        except (aiohttp.ClientError, ValueError) as err:
+        except (aiohttp.ClientError, TimeoutError, ValueError) as err:
             raise UpdateFailed(
                 f"Unable to read data from IPFire: {err}"
             ) from err
@@ -526,6 +526,69 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
             ) from err
 
         await self.async_request_refresh()
+
+    @property
+    def supports_reboot_action(self) -> bool:
+        """Return whether the installed API supports reboot requests."""
+        if self.data is None or self.data.api_revision is None:
+            return False
+        try:
+            revision = tuple(
+                int(part) for part in self.data.api_revision.split(".")
+            )
+        except ValueError:
+            return False
+        return revision >= (0, 2, 5)
+
+    async def async_reboot(self) -> None:
+        """Start an IPFire reboot when the API reports it is required."""
+        if (
+            not self.supports_reboot_action
+            or self.data is None
+            or self.data.system.reboot_required is not True
+        ):
+            raise UpdateFailed("IPFire does not currently require a reboot")
+
+        try:
+            async with self.session.post(
+                self.api_url,
+                auth=self._auth(),
+                ssl=self.verify_ssl,
+                headers={"X-IPFire-API": "1"},
+                data={"action": "reboot"},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as response:
+                if response.status in (401, 403):
+                    raise ConfigEntryAuthFailed(
+                        "Invalid IPFire username or password"
+                    )
+
+                try:
+                    payload = await response.json(content_type=None)
+                except (ValueError, TypeError):
+                    payload = {}
+
+                if not isinstance(payload, dict):
+                    raise UpdateFailed(
+                        "IPFire returned an invalid reboot response"
+                    )
+
+                if (
+                    response.status >= 400
+                    or payload.get("result") != "accepted"
+                ):
+                    error = payload.get("error", "unknown_error")
+                    raise UpdateFailed(
+                        f"Unable to start IPFire reboot: {error}"
+                    )
+
+        except ConfigEntryAuthFailed:
+            raise
+
+        except (aiohttp.ClientError, TimeoutError, ValueError) as err:
+            raise UpdateFailed(
+                f"Unable to start IPFire reboot: {err}"
+            ) from err
 
     async def _async_connection_action(self, action: str) -> None:
         """Execute a connection action on IPFire."""

@@ -88,6 +88,7 @@ HA-IPFire provides the following features:
 * Traffic counters for individual network zones¹
 * Reboot-required status and total available update count¹
 * Review available IPFire updates and install the full Pakfire upgrade from Home Assistant¹
+* Confirm and start a required IPFire reboot through Home Assistant's native Updates interface¹
 * Generate a privacy-conscious diagnostic report in Home Assistant notifications
 
 ¹Requires `api.cgi` from [IPFire-API](https://github.com/FMainz/IPFire-API).
@@ -193,6 +194,7 @@ Sensors are created only for internal interfaces configured on the IPFire firewa
 * **Updates Available** – total number of available updates, including core and package updates. Its `updates` attribute lists the exact core/package updates and versions.
 * **IPFire System Updates** – native Home Assistant update entity. It appears in Home Assistant's Updates section when updates are available; its release summary lists the included core and package updates. Installing it starts the full Pakfire upgrade, because IPFire does not support selecting individual updates.
 * **Update Operation** – reports whether an API-started update is idle, running, completed, or failed.
+* **Restart router** – appears as a native Home Assistant update action when `api.cgi` revision 0.2.5 or newer reports that a reboot is required. Start the router reboot from the Updates interface after confirmation.
 
 ### Internet connection
 
@@ -397,7 +399,7 @@ Current transfer rates are calculated from the traffic counters and are provided
 
 ## Support
 
-If you encounter a problem, press **Error Report** in the device's Diagnostics section. The generated notification contains a copyable report with integration and Home Assistant versions, the configured scan interval, enabled and disabled entity counts, counts of enabled entities in `unavailable` or `unknown` state, UTC timestamps for the last successful update and last error (to the second), a sanitized last error, the DHCP lease count, API feature availability, and update status. The API revision is included starting with IPFire-API v0.2.1. Review the report before sharing; it excludes credentials, IP addresses, hostnames, and DHCP client details.
+If you encounter a problem, press **Error Report** in the device's Diagnostics section. The generated notification contains a copyable report with integration and Home Assistant versions, the configured scan interval, enabled and disabled entity counts, counts of enabled entities in `unavailable` or `unknown` state (the normal `unknown` state of buttons is excluded), UTC timestamps for the last successful update and last error (to the second), a sanitized last error, the DHCP lease count, API feature availability, and update status. The API revision is included starting with IPFire-API v0.2.1. Review the report before sharing; it excludes credentials, IP addresses, hostnames, and DHCP client details.
 
 You can also open an issue or suggest an improvement in the GitHub repository:
 

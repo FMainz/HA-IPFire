@@ -88,6 +88,7 @@ HA-IPFire bietet folgende Funktionen:
 * Trafficzähler für einzelne Netzwerkzonen¹
 * Neustartstatus und Gesamtzahl verfügbarer Updates¹
 * Verfügbare IPFire-Updates anzeigen und das vollständige Pakfire-Upgrade in Home Assistant installieren¹
+* Einen erforderlichen IPFire-Neustart über die native HA-Update-Ansicht bestätigen und starten¹
 * Einen datensparsamen Diagnosebericht in den HA-Benachrichtigungen erstellen
 
 ¹Benötigt api.cgi aus [IPFire-API](https://github.com/FMainz/IPFire-API)
@@ -191,6 +192,7 @@ Sensoren werden nur für interne Schnittstellen angelegt, die auf der IPFire-Fir
 * **Updates verfügbar** – Gesamtzahl der verfügbaren Updates, einschließlich Core- und Paket-Updates. Das Attribut `updates` listet die einzelnen Core- und Paket-Updates mit ihren Versionen auf.
 * **IPFire-Systemupdates** – native Home-Assistant-Update-Entität. Sie erscheint im Update-Bereich von Home Assistant, wenn Updates verfügbar sind; die Release-Zusammenfassung listet Core- und Paket-Updates auf. Mit „Installieren“ wird das vollständige Pakfire-Upgrade gestartet, da IPFire keine Auswahl einzelner Updates unterstützt.
 * **Update-Vorgang** – zeigt an, ob ein über die API gestartetes Update inaktiv ist, läuft, abgeschlossen ist oder fehlgeschlagen ist.
+* **Router neu starten** – erscheint als native Home-Assistant-Update-Aktion, wenn `api.cgi` ab Revision 0.2.5 einen erforderlichen Neustart meldet. Über die Update-Ansicht kannst du den Router-Neustart nach Bestätigung starten.
 
 ### Internetverbindung
 
@@ -400,7 +402,7 @@ Die aktuellen Übertragungsraten werden aus den Trafficzählern berechnet und al
 
 ## Support
 
-Wenn du einen Fehler findest, betätige **Bericht für Fehlermeldungen** im Bereich Diagnose des Geräts. Die Benachrichtigung enthält einen kopierbaren Bericht mit den Versionen von HA-IPFire und Home Assistant, dem eingestellten Abfrageintervall, der Anzahl aktivierter und deaktivierter Entitäten, der Anzahl aktivierter Entitäten mit dem Status `unavailable` oder `unknown`, UTC-Zeitpunkten der letzten erfolgreichen Abfrage und des letzten Fehlers (sekundengenau), einer bereinigten Fehlermeldung, der Anzahl der DHCP-Leases, der Verfügbarkeit von API-Funktionen und dem Update-Status. Die API-Revision wird ab IPFire-API v0.2.1 ausgegeben. Prüfe den Bericht vor dem Teilen; Zugangsdaten, IP-Adressen, Hostnamen und DHCP-Clientdaten werden ausgelassen.
+Wenn du einen Fehler findest, betätige **Bericht für Fehlermeldungen** im Bereich Diagnose des Geräts. Die Benachrichtigung enthält einen kopierbaren Bericht mit den Versionen von HA-IPFire und Home Assistant, dem eingestellten Abfrageintervall, der Anzahl aktivierter und deaktivierter Entitäten, der Anzahl aktivierter Entitäten mit dem Status `unavailable` oder `unknown` (der normale `unknown`-Status von Buttons wird ausgelassen), UTC-Zeitpunkten der letzten erfolgreichen Abfrage und des letzten Fehlers (sekundengenau), einer bereinigten Fehlermeldung, der Anzahl der DHCP-Leases, der Verfügbarkeit von API-Funktionen und dem Update-Status. Die API-Revision wird ab IPFire-API v0.2.1 ausgegeben. Prüfe den Bericht vor dem Teilen; Zugangsdaten, IP-Adressen, Hostnamen und DHCP-Clientdaten werden ausgelassen.
 
 Du kannst auch ein Issue erstellen oder einen Verbesserungsvorschlag im GitHub-Repository einreichen:
 

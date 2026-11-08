@@ -288,8 +288,12 @@ class IPFireActionButton(
 
             domain_counts["enabled"] += 1
             state = self.hass.states.get(entity.entity_id)
-            if state is not None and state.state in {"unavailable", "unknown"}:
-                domain_counts[state.state] += 1
+            if state is None:
+                continue
+            if state.state == "unavailable":
+                domain_counts["unavailable"] += 1
+            elif state.state == "unknown" and entity.domain != "button":
+                domain_counts["unknown"] += 1
         return dict(sorted(counts.items()))
 
     @staticmethod
