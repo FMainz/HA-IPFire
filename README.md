@@ -41,6 +41,14 @@ This documentation is also available in 🇩🇪 [German](README-de.md).
 
 ## What’s New in This Version
 
+### v0.3.7
+
+* Added a privacy-conscious diagnostic report with integration and connection status, API data availability, update status, entity counts, UTC timestamps and sanitized error details. Button entities in their normal `unknown` state are excluded from the unavailable/unknown count; the report omits credentials, IP addresses, hostnames and DHCP client details. API revision is included when supported by IPFire-API v0.2.1 or later.
+* Added the network-card vendor (`mac_vendor`) to DHCP lease attributes, looked up locally from the lease MAC address.
+* Added a native Home Assistant update entity that shows available IPFire core and package updates and can start the full Pakfire upgrade.
+* Added update-operation status reporting and a native Home Assistant update action for starting a required IPFire reboot. These update and reboot features require a compatible `api.cgi`; reboot requires IPFire-API v0.2.5 or later.
+* Updated the `aiooui` dependency requirement to accept compatible versions from 0.1.9 onward.
+
 ### v0.3.6
 
 * Added DHCP lease count and client details as sensor attributes (requires `api.cgi`).

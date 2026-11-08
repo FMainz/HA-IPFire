@@ -41,6 +41,14 @@ Diese Dokumentation ist auch in 🇬🇧 [englischer Sprache](README.md) verfüg
 
 ## Neues in dieser Version
 
+### v0.3.7
+
+* Datenschutzbewussten Diagnosebericht mit Integrations- und Verbindungsstatus, Verfügbarkeit der API-Daten, Update-Status, Entitätsanzahlen, UTC-Zeitangaben und bereinigten Fehlerinformationen hinzugefügt. Der normale Zustand `unknown` von Button-Entitäten wird bei der Anzahl nicht verfügbarer oder unbekannter Entitäten nicht mitgezählt. Zugangsdaten, IP-Adressen, Hostnamen und DHCP-Clientdaten werden im Bericht nicht ausgegeben. Die API-Revision erscheint, wenn IPFire-API v0.2.1 oder neuer sie bereitstellt.
+* Netzwerkhersteller (`mac_vendor`) zu den DHCP-Lease-Attributen hinzugefügt. Die Zuordnung erfolgt lokal anhand der MAC-Adresse des Lease.
+* Native Home-Assistant-Update-Entität hinzugefügt, die verfügbare IPFire-Core- und Paket-Updates anzeigt und das vollständige Pakfire-Upgrade starten kann.
+* Statusmeldung für den Update-Vorgang sowie eine native Home-Assistant-Update-Aktion zum Starten eines erforderlichen IPFire-Neustarts hinzugefügt. Die Update- und Neustartfunktionen benötigen eine kompatible `api.cgi`; für den Neustart ist IPFire-API v0.2.5 oder neuer erforderlich.
+* Versionsanforderung für `aiooui` angepasst, sodass kompatible Versionen ab 0.1.9 verwendet werden können.
+
 ### v0.3.6
 
 * DHCP-Lease-Anzahl und Clientdaten als Sensorattribute hinzugefügt (benötigt api.cgi).
