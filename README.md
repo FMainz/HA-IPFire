@@ -7,11 +7,10 @@
 
 # HA-IPFire
 
-## 🇬🇧 English
+
+This documentation is also available in 🇬🇧 English and 🇩🇪 [German](README-de.md).
 
 Home Assistant integration for monitoring IPFire system information, network status, traffic statistics, and internet connection control.
-
-This documentation is also available in 🇩🇪 [German](README-de.md).
 
 ## Contents
 
