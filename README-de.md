@@ -7,11 +7,9 @@
 
 # HA-IPFire
 
-## 🇩🇪 Deutsch
+Diese Dokumentation ist auf 🇩🇪 Deutsch und 🇬🇧 [Englisch](README.md) verfügbar.
 
 Home-Assistant-Integration zur Überwachung von IPFire-Systeminformationen, Netzwerkstatus, Traffic-Statistiken und zur Steuerung der Internetverbindung.
-
-Diese Dokumentation ist auch in 🇬🇧 [englischer Sprache](README.md) verfügbar.
 
 ## Inhaltsverzeichnis
 
