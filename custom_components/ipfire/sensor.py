@@ -115,6 +115,18 @@ SENSORS: tuple[IPFireSensorDescription, ...] = (
         entity_registry_enabled_default=False,
     ),
     IPFireSensorDescription(
+        key="dns_active_servers",
+        translation_key="dns_active_servers",
+        value_key="dns_servers",
+        data_group="network",
+    ),
+    IPFireSensorDescription(
+        key="assigned_hosts",
+        translation_key="assigned_hosts",
+        value_key="hosts",
+        data_group="network",
+    ),
+    IPFireSensorDescription(
         key="system_version",
         translation_key="system_version",
         value_key="version",
@@ -403,10 +415,15 @@ class IPFireTrafficSensor(
 
         if self.entity_description.data_group == "system":
             data = self.coordinator.data.system
+        elif self.entity_description.data_group == "network":
+            data = self.coordinator.data.network
         else:
             data = self.coordinator.data
 
         value = getattr(data, self.entity_description.value_key, None)
+
+        if self.entity_description.key in ("dns_active_servers", "assigned_hosts"):
+            return len(value) if value is not None else None
 
         if self.entity_description.key == "connected_since":
             if value is None:
@@ -417,10 +434,24 @@ class IPFireTrafficSensor(
 
     @property
     def extra_state_attributes(self) -> dict[str, object] | None:
-        """Expose update details and operation state on the update count sensor."""
+        """Expose DNS server details and update information as sensor attributes."""
+        if self.coordinator.data is None:
+            return None
+
+        if self.entity_description.key == "dns_active_servers":
+            servers = self.coordinator.data.network.dns_servers
+            if servers is None:
+                return None
+            return {"servers": [dict(server) for server in servers]}
+
+        if self.entity_description.key == "assigned_hosts":
+            hosts = self.coordinator.data.network.hosts
+            if hosts is None:
+                return None
+            return {"hosts": [dict(host) for host in hosts]}
+
         if (
             self.entity_description.key != "package_updates"
-            or self.coordinator.data is None
         ):
             return None
 

@@ -52,6 +52,12 @@
       "external_hostname": {
         "default": "mdi:dns"
       },
+      "dns_active_servers": {
+        "default": "mdi:dns"
+      },
+      "assigned_hosts": {
+        "default": "mdi:lan"
+      },
       "system_version": {
         "default": "mdi:fire"
       },

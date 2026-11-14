@@ -74,6 +74,8 @@ class IPFireNetworkData:
     orange: bool | None
     red: bool | None
     interfaces: dict[str, IPFireInterfaceData | None]
+    dns_servers: tuple[dict[str, object], ...] | None
+    hosts: tuple[dict[str, object], ...] | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -272,6 +274,33 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
             if not isinstance(raw_interfaces, dict):
                 raise ValueError("Invalid network interface data from IPFire")
 
+            raw_dns = network.get("dns")
+            if raw_dns is not None and not isinstance(raw_dns, dict):
+                raise ValueError("Invalid DNS data from IPFire")
+            raw_dns_servers = (
+                raw_dns.get("enabled_servers")
+                if isinstance(raw_dns, dict)
+                else None
+            )
+            if raw_dns_servers is not None and (
+                not isinstance(raw_dns_servers, list)
+                or not all(isinstance(server, dict) for server in raw_dns_servers)
+            ):
+                raise ValueError("Invalid enabled DNS server data from IPFire")
+            dns_servers = (
+                tuple(raw_dns_servers)
+                if isinstance(raw_dns_servers, list)
+                else None
+            )
+
+            raw_hosts = network.get("hosts")
+            if raw_hosts is not None and (
+                not isinstance(raw_hosts, list)
+                or not all(isinstance(host, dict) for host in raw_hosts)
+            ):
+                raise ValueError("Invalid host data from IPFire")
+            hosts = tuple(raw_hosts) if isinstance(raw_hosts, list) else None
+
             interfaces: dict[str, IPFireInterfaceData | None] = {}
             for zone in ("red", "green", "orange", "blue"):
                 raw_interface = raw_interfaces.get(zone)
@@ -406,6 +435,8 @@ class IPFireCoordinator(DataUpdateCoordinator[IPFireData]):
                 orange=network.get("orange"),
                 red=network.get("red"),
                 interfaces=interfaces,
+                dns_servers=dns_servers,
+                hosts=hosts,
             )
 
         except (KeyError, TypeError, ValueError) as err:

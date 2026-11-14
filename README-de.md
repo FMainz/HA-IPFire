@@ -39,6 +39,12 @@ Home-Assistant-Integration zur Überwachung von IPFire-Systeminformationen, Netz
 
 ## Neues in dieser Version
 
+### v0.3.8-beta.3
+
+* Sensor für die Anzahl aktiver DNS-Server standardmäßig aktiviert. Das Attribut `servers` listet die von IPFire aktivierten DNS-Resolver-Kandidaten und ihre Adressen auf. Benötigt `api.cgi` mit DNS-Datenunterstützung (IPFire-API v0.2.14 oder neuer).
+* Sensorwert korrigiert, damit die Anzahl der aktiven DNS-Server angezeigt wird.
+* Sensor für zugewiesene statische Hosts standardmäßig aktiviert. Das Attribut `hosts` enthält alle Hostzuordnungen einschließlich deaktivierter Einträge. Benötigt `api.cgi` aus IPFire-API v0.2.15 oder neuer.
+
 ### v0.3.7
 
 * Datenschutzbewussten Diagnosebericht mit Integrations- und Verbindungsstatus, Verfügbarkeit der API-Daten, Update-Status, Entitätsanzahlen, UTC-Zeitangaben und bereinigten Fehlerinformationen hinzugefügt. Der normale Zustand `unknown` von Button-Entitäten wird bei der Anzahl nicht verfügbarer oder unbekannter Entitäten nicht mitgezählt. Zugangsdaten, IP-Adressen, Hostnamen und DHCP-Clientdaten werden im Bericht nicht ausgegeben. Die API-Revision erscheint, wenn IPFire-API v0.2.1 oder neuer sie bereitstellt.
@@ -91,6 +97,8 @@ HA-IPFire bietet folgende Funktionen:
 * HACS-kompatibel
 * Deutsche und englische Übersetzungen
 * DHCP-Lease-Sensor mit Clientdaten¹
+* Sensor für aktive DNS-Server mit Serverdetails¹
+* Sensor für zugewiesene Hosts mit Hostdetails¹
 * Trafficzähler für einzelne Netzwerkzonen¹
 * Neustartstatus und Gesamtzahl verfügbarer Updates¹
 * Verfügbare IPFire-Updates anzeigen und das vollständige Pakfire-Upgrade in Home Assistant installieren¹
@@ -191,6 +199,14 @@ Sensoren werden nur für interne Schnittstellen angelegt, die auf der IPFire-Fir
 ### DHCP-Leases
 
 * **Aktive DHCP-Leases** – Anzahl aktiver DHCP-Leases. Das Attribut `leases` enthält die von IPFire gemeldeten Clientdaten mit IP-Adresse, MAC-Adresse, Hostname, Ablaufzeit und Status. HA-IPFire ergänzt außerdem `mac_vendor`, ermittelt anhand des MAC-Adresspräfixes aus einer lokalen Zuordnungstabelle. Bei privaten oder nicht registrierten MAC-Adressen kann der Wert fehlen oder unzutreffend sein. Die Lease-Details findest du in Home Assistant in der Detailansicht des Sensors unter den Attributen.
+
+### DNS-Server
+
+* **Aktive DNS-Server** – Anzahl der von IPFire aktivierten DNS-Resolver-Kandidaten. Das Attribut `servers` listet jeden Kandidaten mit ID, Adresse und Quelle auf. IPFires Unbound-Resolver kann abhängig von Erreichbarkeit und Antwortzeit zwischen diesen Kandidaten wählen; die Liste zeigt daher nicht einen einzelnen aktuell verwendeten Server. Benötigt `api.cgi` mit DNS-Datenunterstützung, enthalten in IPFire-API v0.2.14 und neuer.
+
+### Zugewiesene Hosts
+
+* **Zugewiesene Hosts** – Anzahl der statischen Hostzuordnungen aus der Hosts-Datei von IPFire. Das Attribut `hosts` listet jede Zuordnung mit IP-Adresse, Hostname, FQDN, Aktivierungsstatus und PTR-Einstellung auf. Deaktivierte Einträge sind enthalten; dynamische DHCP-Leases werden separat aufgeführt. Benötigt `api.cgi` aus IPFire-API v0.2.15 oder neuer.
 
 ### Systemstatus
 

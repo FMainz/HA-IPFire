@@ -39,6 +39,12 @@ Home Assistant integration for monitoring IPFire system information, network sta
 
 ## What’s New in This Version
 
+### v0.3.8-beta.3
+
+* Added an enabled-by-default sensor for the active DNS server count. Its `servers` attribute lists IPFire's enabled DNS resolver candidates and their addresses. Requires `api.cgi` with DNS data support (IPFire-API v0.2.14 or later).
+* Fixed the sensor state so it displays the number of active DNS servers.
+* Added an enabled-by-default sensor for assigned static hosts. Its `hosts` attribute includes the configured host mappings, including disabled entries. Requires `api.cgi` from IPFire-API v0.2.15 or later.
+
 ### v0.3.7
 
 * Added a privacy-conscious diagnostic report with integration and connection status, API data availability, update status, entity counts, UTC timestamps and sanitized error details. Button entities in their normal `unknown` state are excluded from the unavailable/unknown count; the report omits credentials, IP addresses, hostnames and DHCP client details. API revision is included when supported by IPFire-API v0.2.1 or later.
@@ -91,6 +97,8 @@ HA-IPFire provides the following features:
 * HACS compatible
 * German and English translations
 * DHCP lease sensor with client details¹
+* Active DNS server sensor with server details¹
+* Assigned hosts sensor with host details¹
 * Traffic counters for individual network zones¹
 * Reboot-required status and total available update count¹
 * Review available IPFire updates and install the full Pakfire upgrade from Home Assistant¹
@@ -193,6 +201,14 @@ Sensors are created only for internal interfaces configured on the IPFire firewa
 ### DHCP leases
 
 * **Active DHCP Leases** – number of active DHCP leases. The `leases` attribute contains the client records reported by IPFire, including IP address, MAC address, hostname, expiry, and status. HA-IPFire also adds `mac_vendor`, looked up locally from the MAC address prefix. This may be unavailable or inaccurate for private or unregistered MAC addresses. To view the lease details, open the sensor's more-info panel in Home Assistant and inspect its attributes.
+
+### DNS servers
+
+* **Active DNS Servers** – number of enabled DNS resolver candidates reported by IPFire. The `servers` attribute lists each candidate with its ID, address, and source. IPFire's Unbound resolver can choose between these candidates based on reachability and response time, so the list does not identify one server currently in use. Requires `api.cgi` with DNS data support, included in IPFire-API v0.2.14 and later.
+
+### Assigned hosts
+
+* **Assigned Hosts** – number of static host mappings in IPFire's hosts file. The `hosts` attribute lists each mapping with its IP address, hostname, FQDN, enabled state, and PTR setting. Disabled entries are included; dynamic DHCP leases are listed separately. Requires `api.cgi` from IPFire-API v0.2.15 or later.
 
 ### System status
 

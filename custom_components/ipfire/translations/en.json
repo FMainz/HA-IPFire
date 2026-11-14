@@ -84,6 +84,12 @@
       "dhcp_active_leases": {
         "name": "Active DHCP Leases"
       },
+      "dns_active_servers": {
+        "name": "Active DNS Servers"
+      },
+      "assigned_hosts": {
+        "name": "Assigned Hosts"
+      },
       "green_rx_bytes": {
         "name": "Green Traffic Received"
       },
